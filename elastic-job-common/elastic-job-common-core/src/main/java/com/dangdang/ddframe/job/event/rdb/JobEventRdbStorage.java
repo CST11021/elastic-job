@@ -51,43 +51,79 @@ final class JobEventRdbStorage {
     private static final String TABLE_JOB_STATUS_TRACE_LOG = "JOB_STATUS_TRACE_LOG";
     
     private static final String TASK_ID_STATE_INDEX = "TASK_ID_STATE_INDEX";
-    
+
+    /** 数据源 */
     private final DataSource dataSource;
-    
+
+    /** 表示数据库类型 */
     private DatabaseType databaseType;
-    
+
+    /**
+     * 根据数据源初始化数据库表和索引
+     *
+     * @param dataSource
+     * @throws SQLException
+     */
     JobEventRdbStorage(final DataSource dataSource) throws SQLException {
         this.dataSource = dataSource;
         initTablesAndIndexes();
     }
-    
+
+    /**
+     * 初始化表和索引
+     *
+     * @throws SQLException
+     */
     private void initTablesAndIndexes() throws SQLException {
         try (Connection conn = dataSource.getConnection()) {
+            // 创建
             createJobExecutionTableAndIndexIfNeeded(conn);
             createJobStatusTraceTableAndIndexIfNeeded(conn);
             databaseType = DatabaseType.valueFrom(conn.getMetaData().getDatabaseProductName());
         }
     }
-    
+
+    /**
+     * 创建 TABLE_JOB_EXECUTION_LOG 表
+     *
+     * @param conn
+     * @throws SQLException
+     */
     private void createJobExecutionTableAndIndexIfNeeded(final Connection conn) throws SQLException {
         DatabaseMetaData dbMetaData = conn.getMetaData();
+        // 如果不存在则创建一个保存任务执行日志的表
         try (ResultSet resultSet = dbMetaData.getTables(null, null, TABLE_JOB_EXECUTION_LOG, new String[]{"TABLE"})) {
             if (!resultSet.next()) {
                 createJobExecutionTable(conn);
             }
         }
     }
-    
+
+    /**
+     * 创建 TABLE_JOB_STATUS_TRACE_LOG 表和相应的索引
+     *
+     * @param conn
+     * @throws SQLException
+     */
     private void createJobStatusTraceTableAndIndexIfNeeded(final Connection conn) throws SQLException {
         DatabaseMetaData dbMetaData = conn.getMetaData();
         try (ResultSet resultSet = dbMetaData.getTables(null, null, TABLE_JOB_STATUS_TRACE_LOG, new String[]{"TABLE"})) {
             if (!resultSet.next()) {
+
                 createJobStatusTraceTable(conn);
             }
         }
         createTaskIdIndexIfNeeded(conn, TABLE_JOB_STATUS_TRACE_LOG, TASK_ID_STATE_INDEX);
     }
-    
+
+    /**
+     * 创建 TABLE_JOB_STATUS_TRACE_LOG 表的 TASK_ID_STATE_INDEX 联合索引
+     *
+     * @param conn
+     * @param tableName
+     * @param indexName
+     * @throws SQLException
+     */
     private void createTaskIdIndexIfNeeded(final Connection conn, final String tableName, final String indexName) throws SQLException {
         DatabaseMetaData dbMetaData = conn.getMetaData();
         try (ResultSet resultSet = dbMetaData.getIndexInfo(null, null, tableName, false, false)) {
@@ -98,11 +134,18 @@ final class JobEventRdbStorage {
                 }
             }
             if (!hasTaskIdIndex) {
+                // 创建任务id和state联合索引
                 createTaskIdAndStateIndex(conn, tableName);
             }
         }
     }
-    
+
+    /**
+     * 创建任务执行日志表
+     *
+     * @param conn
+     * @throws SQLException
+     */
     private void createJobExecutionTable(final Connection conn) throws SQLException {
         String dbSchema = "CREATE TABLE `" + TABLE_JOB_EXECUTION_LOG + "` ("
                 + "`id` VARCHAR(40) NOT NULL, "
@@ -121,7 +164,13 @@ final class JobEventRdbStorage {
             preparedStatement.execute();
         }
     }
-    
+
+    /**
+     * 创建任务状态追踪的表
+     *
+     * @param conn
+     * @throws SQLException
+     */
     private void createJobStatusTraceTable(final Connection conn) throws SQLException {
         String dbSchema = "CREATE TABLE `" + TABLE_JOB_STATUS_TRACE_LOG + "` ("
                 + "`id` VARCHAR(40) NOT NULL, "
@@ -140,14 +189,28 @@ final class JobEventRdbStorage {
             preparedStatement.execute();
         }
     }
-    
+
+    /**
+     * 创建索引
+     *
+     * @param conn
+     * @param tableName
+     * @throws SQLException
+     */
     private void createTaskIdAndStateIndex(final Connection conn, final String tableName) throws SQLException {
         String sql = "CREATE INDEX " + TASK_ID_STATE_INDEX + " ON " + tableName + " (`task_id`, `state`);";
         try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
             preparedStatement.execute();
         }
     }
-    
+
+
+    /**
+     * 向数据库添加任务执行事件
+     *
+     * @param jobExecutionEvent
+     * @return
+     */
     boolean addJobExecutionEvent(final JobExecutionEvent jobExecutionEvent) {
         if (null == jobExecutionEvent.getCompleteTime()) {
             return insertJobExecutionEvent(jobExecutionEvent);
@@ -158,6 +221,70 @@ final class JobEventRdbStorage {
                 return updateJobExecutionEventFailure(jobExecutionEvent);
             }
         }
+    }
+
+    /**
+     * 向数据库添加任务状态事件
+     *
+     * @param jobStatusTraceEvent
+     * @return
+     */
+    boolean addJobStatusTraceEvent(final JobStatusTraceEvent jobStatusTraceEvent) {
+        String originalTaskId = jobStatusTraceEvent.getOriginalTaskId();
+        if (State.TASK_STAGING != jobStatusTraceEvent.getState()) {
+            originalTaskId = getOriginalTaskId(jobStatusTraceEvent.getTaskId());
+        }
+        boolean result = false;
+        String sql = "INSERT INTO `" + TABLE_JOB_STATUS_TRACE_LOG + "` (`id`, `job_name`, `original_task_id`, `task_id`, `slave_id`, `source`, `execution_type`, `sharding_item`,  "
+                + "`state`, `message`, `creation_time`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+        try (
+                Connection conn = dataSource.getConnection();
+                PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            preparedStatement.setString(1, UUID.randomUUID().toString());
+            preparedStatement.setString(2, jobStatusTraceEvent.getJobName());
+            preparedStatement.setString(3, originalTaskId);
+            preparedStatement.setString(4, jobStatusTraceEvent.getTaskId());
+            preparedStatement.setString(5, jobStatusTraceEvent.getSlaveId());
+            preparedStatement.setString(6, jobStatusTraceEvent.getSource().toString());
+            preparedStatement.setString(7, jobStatusTraceEvent.getExecutionType().name());
+            preparedStatement.setString(8, jobStatusTraceEvent.getShardingItems());
+            preparedStatement.setString(9, jobStatusTraceEvent.getState().toString());
+            preparedStatement.setString(10, truncateString(jobStatusTraceEvent.getMessage()));
+            preparedStatement.setTimestamp(11, new Timestamp(jobStatusTraceEvent.getCreationTime().getTime()));
+            preparedStatement.execute();
+            result = true;
+        } catch (final SQLException ex) {
+            // TODO 记录失败直接输出日志,未来可考虑配置化
+            log.error(ex.getMessage());
+        }
+        return result;
+    }
+
+    /**
+     * 根据任务id查询
+     *
+     * @param taskId
+     * @return
+     */
+    List<JobStatusTraceEvent> getJobStatusTraceEvents(final String taskId) {
+        String sql = String.format("SELECT * FROM %s WHERE task_id = '%s'", TABLE_JOB_STATUS_TRACE_LOG, taskId);
+        List<JobStatusTraceEvent> result = new ArrayList<>();
+        try (
+                Connection conn = dataSource.getConnection();
+                PreparedStatement preparedStatement = conn.prepareStatement(sql);
+                ResultSet resultSet = preparedStatement.executeQuery()
+        ) {
+            while (resultSet.next()) {
+                JobStatusTraceEvent jobStatusTraceEvent = new JobStatusTraceEvent(resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4),
+                        resultSet.getString(5), Source.valueOf(resultSet.getString(6)), ExecutionType.valueOf(resultSet.getString(7)), resultSet.getString(8),
+                        State.valueOf(resultSet.getString(9)), resultSet.getString(10), new SimpleDateFormat("yyyy-mm-dd HH:MM:SS").parse(resultSet.getString(11)));
+                result.add(jobStatusTraceEvent);
+            }
+        } catch (final SQLException | ParseException ex) {
+            // TODO 记录失败直接输出日志,未来可考虑配置化
+            log.error(ex.getMessage());
+        }
+        return result;
     }
     
     private boolean insertJobExecutionEvent(final JobExecutionEvent jobExecutionEvent) {
@@ -292,37 +419,6 @@ final class JobEventRdbStorage {
         return result;
     }
     
-    boolean addJobStatusTraceEvent(final JobStatusTraceEvent jobStatusTraceEvent) {
-        String originalTaskId = jobStatusTraceEvent.getOriginalTaskId();
-        if (State.TASK_STAGING != jobStatusTraceEvent.getState()) {
-            originalTaskId = getOriginalTaskId(jobStatusTraceEvent.getTaskId());
-        }
-        boolean result = false;
-        String sql = "INSERT INTO `" + TABLE_JOB_STATUS_TRACE_LOG + "` (`id`, `job_name`, `original_task_id`, `task_id`, `slave_id`, `source`, `execution_type`, `sharding_item`,  " 
-                + "`state`, `message`, `creation_time`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
-            preparedStatement.setString(1, UUID.randomUUID().toString());
-            preparedStatement.setString(2, jobStatusTraceEvent.getJobName());
-            preparedStatement.setString(3, originalTaskId);
-            preparedStatement.setString(4, jobStatusTraceEvent.getTaskId());
-            preparedStatement.setString(5, jobStatusTraceEvent.getSlaveId());
-            preparedStatement.setString(6, jobStatusTraceEvent.getSource().toString());
-            preparedStatement.setString(7, jobStatusTraceEvent.getExecutionType().name());
-            preparedStatement.setString(8, jobStatusTraceEvent.getShardingItems());
-            preparedStatement.setString(9, jobStatusTraceEvent.getState().toString());
-            preparedStatement.setString(10, truncateString(jobStatusTraceEvent.getMessage()));
-            preparedStatement.setTimestamp(11, new Timestamp(jobStatusTraceEvent.getCreationTime().getTime()));
-            preparedStatement.execute();
-            result = true;
-        } catch (final SQLException ex) {
-            // TODO 记录失败直接输出日志,未来可考虑配置化
-            log.error(ex.getMessage());
-        }
-        return result;
-    }
-    
     private String getOriginalTaskId(final String taskId) {
         String sql = String.format("SELECT original_task_id FROM %s WHERE task_id = '%s' and state='%s'", TABLE_JOB_STATUS_TRACE_LOG, taskId, State.TASK_STAGING);
         String result = "";
@@ -345,24 +441,5 @@ final class JobEventRdbStorage {
         return !Strings.isNullOrEmpty(str) && str.length() > 4000 ? str.substring(0, 4000) : str;
     }
     
-    List<JobStatusTraceEvent> getJobStatusTraceEvents(final String taskId) {
-        String sql = String.format("SELECT * FROM %s WHERE task_id = '%s'", TABLE_JOB_STATUS_TRACE_LOG, taskId);
-        List<JobStatusTraceEvent> result = new ArrayList<>();
-        try (
-                Connection conn = dataSource.getConnection();
-                PreparedStatement preparedStatement = conn.prepareStatement(sql);
-                ResultSet resultSet = preparedStatement.executeQuery()
-                ) {
-            while (resultSet.next()) {
-                JobStatusTraceEvent jobStatusTraceEvent = new JobStatusTraceEvent(resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4),
-                        resultSet.getString(5), Source.valueOf(resultSet.getString(6)), ExecutionType.valueOf(resultSet.getString(7)), resultSet.getString(8),
-                        State.valueOf(resultSet.getString(9)), resultSet.getString(10), new SimpleDateFormat("yyyy-mm-dd HH:MM:SS").parse(resultSet.getString(11)));
-                result.add(jobStatusTraceEvent);
-            }
-        } catch (final SQLException | ParseException ex) {
-            // TODO 记录失败直接输出日志,未来可考虑配置化
-            log.error(ex.getMessage());
-        }
-        return result;
-    }
+
 }

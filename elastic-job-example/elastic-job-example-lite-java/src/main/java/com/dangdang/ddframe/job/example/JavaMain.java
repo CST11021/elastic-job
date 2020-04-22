@@ -40,16 +40,19 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermissions;
 
 public final class JavaMain {
-    
+
+
+    /** zk端口 */
     private static final int EMBED_ZOOKEEPER_PORT = 4181;
-    
+    /** zk地址 */
     private static final String ZOOKEEPER_CONNECTION_STRING = "localhost:" + EMBED_ZOOKEEPER_PORT;
-    
+    /** 隔离命名空间，对应zk的Chroot */
     private static final String JOB_NAMESPACE = "elastic-job-example-lite-java";
-    
+
     // switch to MySQL by yourself
 //    private static final String EVENT_RDB_STORAGE_DRIVER = "com.mysql.jdbc.Driver";
 //    private static final String EVENT_RDB_STORAGE_URL = "jdbc:mysql://localhost:3306/elastic_job_log";
+
     
     private static final String EVENT_RDB_STORAGE_DRIVER = "org.h2.Driver";
     
@@ -59,24 +62,40 @@ public final class JavaMain {
     
     private static final String EVENT_RDB_STORAGE_PASSWORD = "";
     
-    // CHECKSTYLE:OFF
     public static void main(final String[] args) throws IOException {
-    // CHECKSTYLE:ON
+        // 启动一个zk服务
         EmbedZookeeperServer.start(EMBED_ZOOKEEPER_PORT);
+
+        // 启动注册中心：连接zk服务
         CoordinatorRegistryCenter regCenter = setUpRegistryCenter();
+
+        // 监听任务执行情况
         JobEventConfiguration jobEventConfig = new JobEventRdbConfiguration(setUpEventTraceDataSource());
+
+        // 启动任务
         setUpSimpleJob(regCenter, jobEventConfig);
-        setUpDataflowJob(regCenter, jobEventConfig);
-        setUpScriptJob(regCenter, jobEventConfig);
+
+        // setUpDataflowJob(regCenter, jobEventConfig);
+        // setUpScriptJob(regCenter, jobEventConfig);
     }
-    
+
+    /**
+     * 启动注册中心
+     *
+     * @return
+     */
     private static CoordinatorRegistryCenter setUpRegistryCenter() {
         ZookeeperConfiguration zkConfig = new ZookeeperConfiguration(ZOOKEEPER_CONNECTION_STRING, JOB_NAMESPACE);
         CoordinatorRegistryCenter result = new ZookeeperRegistryCenter(zkConfig);
         result.init();
         return result;
     }
-    
+
+    /**
+     * 设置数据源
+     *
+     * @return
+     */
     private static DataSource setUpEventTraceDataSource() {
         BasicDataSource result = new BasicDataSource();
         result.setDriverClassName(EVENT_RDB_STORAGE_DRIVER);
@@ -85,11 +104,27 @@ public final class JavaMain {
         result.setPassword(EVENT_RDB_STORAGE_PASSWORD);
         return result;
     }
-    
+
+    /**
+     * 启动一个SimpleJob
+     *
+     * @param regCenter         作业注册中心
+     * @param jobEventConfig    作业事件，用于保存作业执行的日志
+     */
     private static void setUpSimpleJob(final CoordinatorRegistryCenter regCenter, final JobEventConfiguration jobEventConfig) {
+
+        // 一、创建一个作业任务
+
+        // 1、配置一个作业任务
         JobCoreConfiguration coreConfig = JobCoreConfiguration.newBuilder("javaSimpleJob", "0/5 * * * * ?", 3).shardingItemParameters("0=Beijing,1=Shanghai,2=Guangzhou").build();
+        // 2、创建一个简单类型的作业任务
         SimpleJobConfiguration simpleJobConfig = new SimpleJobConfiguration(coreConfig, JavaSimpleJob.class.getCanonicalName());
-        new JobScheduler(regCenter, LiteJobConfiguration.newBuilder(simpleJobConfig).build(), jobEventConfig).init();
+        // 3、作业额外的一些配置，比如：分片策略、是否禁用等
+        LiteJobConfiguration liteJobConfiguration = LiteJobConfiguration.newBuilder(simpleJobConfig).build();
+
+        // 二、启动作业调度器
+        JobScheduler jobScheduler = new JobScheduler(regCenter, liteJobConfiguration, jobEventConfig);
+        jobScheduler.init();
     }
     
     private static void setUpDataflowJob(final CoordinatorRegistryCenter regCenter, final JobEventConfiguration jobEventConfig) {

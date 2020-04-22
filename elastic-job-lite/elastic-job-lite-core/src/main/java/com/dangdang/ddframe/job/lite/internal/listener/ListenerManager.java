@@ -37,7 +37,8 @@ import java.util.List;
  * @author zhangliang
  */
 public final class ListenerManager {
-    
+
+    /** 作业节点的数据存储类 */
     private final JobNodeStorage jobNodeStorage;
     
     private final ElectionListenerManager electionListenerManager;

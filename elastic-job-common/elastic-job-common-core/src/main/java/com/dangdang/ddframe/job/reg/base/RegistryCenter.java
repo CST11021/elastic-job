@@ -74,16 +74,15 @@ public interface RegistryCenter {
     void remove(String key);
     
     /**
-     * 获取注册中心当前时间.
+     * 获取节点的最后修改时间
      * 
      * @param key 用于获取时间的键
-     * @return 注册中心当前时间
+     * @return 获取节点的最后修改时间
      */
     long getRegistryCenterTime(String key);
     
     /**
-     * 直接获取操作注册中心的原生客户端.
-     * 如：Zookeeper或Redis等原生客户端.
+     * 直接获取操作注册中心的原生客户端，如：Zookeeper或Redis等原生客户端.
      * 
      * @return 注册中心的原生客户端
      */

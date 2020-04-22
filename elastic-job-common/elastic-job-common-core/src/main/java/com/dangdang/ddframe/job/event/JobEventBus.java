@@ -23,20 +23,24 @@ import com.google.common.eventbus.EventBus;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * 运行痕迹事件总线.
+ * 运行痕迹事件总线：用于注册事件监听和发布事件
  * 
  * @author zhangliang
  * @author caohao
  */
 @Slf4j
 public final class JobEventBus {
-    
+
+    /** 作业事件配置 */
     private final JobEventConfiguration jobEventConfig;
-    
+
+    /** 线程池服务 */
     private final ExecutorServiceObject executorServiceObject;
-    
+
+    /** 事件总线 */
     private final EventBus eventBus;
-    
+
+    /** 表示该事件实例是否已经注册 */
     private boolean isRegistered;
     
     public JobEventBus() {
@@ -51,7 +55,10 @@ public final class JobEventBus {
         eventBus = new AsyncEventBus(executorServiceObject.createExecutorService());
         register();
     }
-    
+
+    /**
+     * 注册该事件的监听器
+     */
     private void register() {
         try {
             eventBus.register(jobEventConfig.createJobEventListener());
@@ -62,7 +69,7 @@ public final class JobEventBus {
     }
     
     /**
-     * 发布事件.
+     * 发布一个作业事件.
      *
      * @param event 作业事件
      */

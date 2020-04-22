@@ -31,4 +31,5 @@ public final class TestJobEventConfiguration extends TestJobEventIdentity implem
     public JobEventListener createJobEventListener() throws JobEventListenerConfigurationException {
         return new TestJobEventListener(jobEventCaller);
     }
+
 }

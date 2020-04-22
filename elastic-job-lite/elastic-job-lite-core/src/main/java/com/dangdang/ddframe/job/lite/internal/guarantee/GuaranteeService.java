@@ -29,7 +29,8 @@ import java.util.Collection;
  * @author zhangliang
  */
 public final class GuaranteeService {
-    
+
+    /** 用于操作zk上的作业节点数据 */
     private final JobNodeStorage jobNodeStorage;
     
     private final ConfigurationService configService;

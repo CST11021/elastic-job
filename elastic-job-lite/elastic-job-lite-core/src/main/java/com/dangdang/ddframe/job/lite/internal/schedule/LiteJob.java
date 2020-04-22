@@ -1,6 +1,7 @@
 package com.dangdang.ddframe.job.lite.internal.schedule;
 
 import com.dangdang.ddframe.job.api.ElasticJob;
+import com.dangdang.ddframe.job.executor.AbstractElasticJobExecutor;
 import com.dangdang.ddframe.job.executor.JobExecutorFactory;
 import com.dangdang.ddframe.job.executor.JobFacade;
 import lombok.Setter;
@@ -20,9 +21,16 @@ public final class LiteJob implements Job {
     
     @Setter
     private JobFacade jobFacade;
-    
+
+    /**
+     * 执行作业
+     *
+     * @param context
+     * @throws JobExecutionException
+     */
     @Override
     public void execute(final JobExecutionContext context) throws JobExecutionException {
-        JobExecutorFactory.getJobExecutor(elasticJob, jobFacade).execute();
+        AbstractElasticJobExecutor executor = JobExecutorFactory.getJobExecutor(elasticJob, jobFacade);
+        executor.execute();
     }
 }

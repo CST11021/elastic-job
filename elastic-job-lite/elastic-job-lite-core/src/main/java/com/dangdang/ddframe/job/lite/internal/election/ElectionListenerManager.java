@@ -59,7 +59,14 @@ public final class ElectionListenerManager extends AbstractListenerManager {
     }
     
     class LeaderElectionJobListener extends AbstractJobListener {
-        
+
+        /**
+         * 节点数据变更时触发
+         *
+         * @param path          节点路径
+         * @param eventType     事件类型
+         * @param data
+         */
         @Override
         protected void dataChanged(final String path, final Type eventType, final String data) {
             if (!JobRegistry.getInstance().isShutdown(jobName) && (isActiveElection(path, data) || isPassiveElection(path, eventType))) {

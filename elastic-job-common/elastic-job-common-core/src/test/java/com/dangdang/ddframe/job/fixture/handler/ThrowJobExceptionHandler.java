@@ -26,4 +26,5 @@ public final class ThrowJobExceptionHandler implements JobExceptionHandler {
     public void handleException(final String jobName, final Throwable cause) {
         throw new JobSystemException(cause);
     }
+
 }

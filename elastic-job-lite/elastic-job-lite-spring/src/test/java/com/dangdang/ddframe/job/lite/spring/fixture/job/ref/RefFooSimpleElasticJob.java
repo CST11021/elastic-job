@@ -25,6 +25,7 @@ import lombok.Setter;
 
 public class RefFooSimpleElasticJob implements SimpleJob {
 
+    /** 表示作业是否执行完成 */
     @Getter
     private static volatile boolean completed;
     
@@ -38,6 +39,9 @@ public class RefFooSimpleElasticJob implements SimpleJob {
         completed = true;
     }
 
+    /**
+     * 重置作业
+     */
     public static void reset() {
         completed = false;
     }

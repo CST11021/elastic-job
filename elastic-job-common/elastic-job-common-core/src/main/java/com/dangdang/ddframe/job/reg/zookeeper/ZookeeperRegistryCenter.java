@@ -53,10 +53,12 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public final class ZookeeperRegistryCenter implements CoordinatorRegistryCenter {
-    
+
+    /** zk配置 */
     @Getter(AccessLevel.PROTECTED)
     private ZookeeperConfiguration zkConfig;
-    
+
+    /** Map<作业名称, 作业相关的缓存> */
     private final Map<String, TreeCache> caches = new HashMap<>();
     
     @Getter
@@ -65,10 +67,15 @@ public final class ZookeeperRegistryCenter implements CoordinatorRegistryCenter 
     public ZookeeperRegistryCenter(final ZookeeperConfiguration zkConfig) {
         this.zkConfig = zkConfig;
     }
-    
+
+    /**
+     * 初始化注册中心：创建zk客户端实例，使该实例具有操作zk服务的能力
+     */
     @Override
     public void init() {
         log.debug("Elastic job: zookeeper registry center init, server lists is: {}.", zkConfig.getServerLists());
+
+        // 基于zk配置创建一个zk客户端
         CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
                 .connectString(zkConfig.getServerLists())
                 .retryPolicy(new ExponentialBackoffRetry(zkConfig.getBaseSleepTimeMilliseconds(), zkConfig.getMaxRetries(), zkConfig.getMaxSleepTimeMilliseconds()))
@@ -96,7 +103,9 @@ public final class ZookeeperRegistryCenter implements CoordinatorRegistryCenter 
         }
         client = builder.build();
         client.start();
+
         try {
+            // 阻塞线程，直到连接上zk服务
             if (!client.blockUntilConnected(zkConfig.getMaxSleepTimeMilliseconds() * zkConfig.getMaxRetries(), TimeUnit.MILLISECONDS)) {
                 client.close();
                 throw new KeeperException.OperationTimeoutException();
@@ -117,7 +126,7 @@ public final class ZookeeperRegistryCenter implements CoordinatorRegistryCenter 
         CloseableUtils.closeQuietly(client);
     }
     
-    /* TODO 等待500ms, cache先关闭再关闭client, 否则会抛异常
+    /** TODO 等待500ms, cache先关闭再关闭client, 否则会抛异常
      * 因为异步处理, 可能会导致client先关闭而cache还未关闭结束.
      * 等待Curator新版本解决这个bug.
      * BUG地址：https://issues.apache.org/jira/browse/CURATOR-157
@@ -129,20 +138,34 @@ public final class ZookeeperRegistryCenter implements CoordinatorRegistryCenter 
             Thread.currentThread().interrupt();
         }
     }
-    
+
+    /**
+     * 获取注册数据.
+     *
+     * @param key 键
+     * @return 值
+     */
     @Override
     public String get(final String key) {
+        // 线程本地缓存获取，获取不到再从zk获取
         TreeCache cache = findTreeCache(key);
         if (null == cache) {
             return getDirectly(key);
         }
+
         ChildData resultInCache = cache.getCurrentData(key);
         if (null != resultInCache) {
             return null == resultInCache.getData() ? null : new String(resultInCache.getData(), Charsets.UTF_8);
         }
         return getDirectly(key);
     }
-    
+
+    /**
+     * 从本地缓存获取
+     *
+     * @param key
+     * @return
+     */
     private TreeCache findTreeCache(final String key) {
         for (Entry<String, TreeCache> entry : caches.entrySet()) {
             if (key.startsWith(entry.getKey())) {
@@ -151,7 +174,13 @@ public final class ZookeeperRegistryCenter implements CoordinatorRegistryCenter 
         }
         return null;
     }
-    
+
+    /**
+     * 直接从注册中心而非本地缓存获取数据.
+     *
+     * @param key 键
+     * @return 值
+     */
     @Override
     public String getDirectly(final String key) {
         try {
@@ -163,7 +192,13 @@ public final class ZookeeperRegistryCenter implements CoordinatorRegistryCenter 
             return null;
         }
     }
-    
+
+    /**
+     * 获取子节点名称集合.
+     *
+     * @param key 键
+     * @return 子节点名称集合
+     */
     @Override
     public List<String> getChildrenKeys(final String key) {
         try {
@@ -284,7 +319,13 @@ public final class ZookeeperRegistryCenter implements CoordinatorRegistryCenter 
             RegExceptionHandler.handleException(ex);
         }
     }
-    
+
+    /**
+     * 获取节点的最后修改时间
+     *
+     * @param key 用于获取时间的键
+     * @return 获取节点的最后修改时间
+     */
     @Override
     public long getRegistryCenterTime(final String key) {
         long result = 0L;
@@ -304,7 +345,12 @@ public final class ZookeeperRegistryCenter implements CoordinatorRegistryCenter 
     public Object getRawClient() {
         return client;
     }
-    
+
+    /**
+     * 添加作业的配置信息到缓存
+     *
+     * @param cachePath 需加入缓存的路径（对应作业名称）
+     */
     @Override
     public void addCacheData(final String cachePath) {
         TreeCache cache = new TreeCache(client, cachePath);
@@ -317,7 +363,12 @@ public final class ZookeeperRegistryCenter implements CoordinatorRegistryCenter 
         }
         caches.put(cachePath + "/", cache);
     }
-    
+
+    /**
+     * 释放本地缓存.
+     *
+     * @param cachePath 需释放缓存的路径（对应作业名称）
+     */
     @Override
     public void evictCacheData(final String cachePath) {
         TreeCache cache = caches.remove(cachePath + "/");
@@ -325,7 +376,13 @@ public final class ZookeeperRegistryCenter implements CoordinatorRegistryCenter 
             cache.close();
         }
     }
-    
+
+    /**
+     * 获取注册中心数据缓存对象.
+     *
+     * @param cachePath 缓存的节点路径
+     * @return 注册中心数据缓存对象
+     */
     @Override
     public Object getRawCache(final String cachePath) {
         return caches.get(cachePath + "/");

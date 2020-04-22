@@ -38,7 +38,15 @@ public final class ZookeeperElectionService {
     private final CountDownLatch leaderLatch = new CountDownLatch(1);
     
     private final LeaderSelector leaderSelector;
-    
+
+    /**
+     *
+     *
+     * @param identity
+     * @param client
+     * @param electionPath
+     * @param electionCandidate
+     */
     public ZookeeperElectionService(final String identity, final CuratorFramework client, final String electionPath, final ElectionCandidate electionCandidate) {
         leaderSelector = new LeaderSelector(client, electionPath, new LeaderSelectorListenerAdapter() {
             

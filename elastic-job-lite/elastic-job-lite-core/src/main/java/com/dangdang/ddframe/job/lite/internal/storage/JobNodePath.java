@@ -40,11 +40,12 @@ public final class JobNodePath {
     private static final String INSTANCES_NODE = "instances";
     
     private static final String SHARDING_NODE = "sharding";
-    
+
+    /** 作业名称 */
     private final String jobName;
     
     /**
-     * 获取节点全路径.
+     * 返回：/${jobName}/${node}
      * 
      * @param node 节点名称
      * @return 节点全路径
@@ -54,7 +55,7 @@ public final class JobNodePath {
     }
     
     /**
-     * 获取配置节点根路径.
+     * 获取配置节点根路径，返回：/${jobName}/config
      *
      * @return 配置节点根路径
      */
@@ -63,7 +64,7 @@ public final class JobNodePath {
     }
     
     /**
-     * 获取leader选举地址节点路径.
+     * 获取leader选举地址节点路径：/${jobName}/leader/election/instance
      *
      * @return leader选举地址节点路径
      */
@@ -72,7 +73,7 @@ public final class JobNodePath {
     }
     
     /**
-     * 获取作业节点IP地址根路径.
+     * 获取作业节点IP地址根路径：/${jobName}/servers
      *
      * @return 作业节点IP地址根路径
      */
@@ -81,7 +82,7 @@ public final class JobNodePath {
     }
     
     /**
-     * 根据IP地址获取作业节点路径.
+     * 根据IP地址获取作业节点路径：/${jobName}/servers/${serverIp}
      *
      * @param serverIp 作业服务器IP地址
      * @return 作业节点IP地址路径
@@ -91,7 +92,7 @@ public final class JobNodePath {
     }
     
     /**
-     * 获取作业实例节点根路径.
+     * 获取作业实例节点根路径：/${jobName}/instances
      *
      * @return 作业实例节点根路径
      */
@@ -100,7 +101,7 @@ public final class JobNodePath {
     }
     
     /**
-     * 根据作业实例ID获取作业实例节点路径.
+     * 根据作业实例ID获取作业实例节点路径：/${jobName}/instances/${instanceId}
      *
      * @param instanceId 作业实例ID
      * @return 作业实例节点路径
@@ -110,7 +111,7 @@ public final class JobNodePath {
     }
     
     /**
-     * 获取分片节点根路径.
+     * 获取分片节点根路径：/${jobName}/sharding
      *
      * @return 分片节点根路径
      */
@@ -119,7 +120,7 @@ public final class JobNodePath {
     }
     
     /**
-     * 获取分片节点路径.
+     * 获取分片节点路径：/${jobName}/sharding/${item}/${nodeName}
      *
      * @param item 分片项
      * @param nodeName 子节点名称

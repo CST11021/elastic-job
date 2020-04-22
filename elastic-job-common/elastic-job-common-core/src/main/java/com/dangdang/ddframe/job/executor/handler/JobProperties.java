@@ -37,14 +37,15 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 public final class JobProperties {
-    
+
+    /** Map<处理器枚举类型，实现类的全限定类名> */
     private EnumMap<JobPropertiesEnum, String> map = new EnumMap<>(JobPropertiesEnum.class);
     
     /**
      * 设置作业属性.
      * 
-     * @param key 属性键
-     * @param value 属性值
+     * @param key   对应{@link JobPropertiesEnum#key}
+     * @param value 处理器的全限定类名
      */
     public void put(final String key, final String value) {
         JobPropertiesEnum jobPropertiesEnum = JobPropertiesEnum.from(key);
@@ -84,14 +85,9 @@ public final class JobProperties {
     @Getter
     public enum JobPropertiesEnum {
         
-        /**
-         * 作业异常处理器.
-         */
+        /** 作业异常处理器. */
         JOB_EXCEPTION_HANDLER("job_exception_handler", JobExceptionHandler.class, DefaultJobExceptionHandler.class.getCanonicalName()),
-        
-        /**
-         * 线程池服务处理器.
-         */
+        /** 线程池服务处理器. */
         EXECUTOR_SERVICE_HANDLER("executor_service_handler", ExecutorServiceHandler.class, DefaultExecutorServiceHandler.class.getCanonicalName());
         
         private final String key;

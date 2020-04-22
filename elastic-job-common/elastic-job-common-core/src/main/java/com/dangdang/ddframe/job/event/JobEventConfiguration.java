@@ -31,4 +31,5 @@ public interface JobEventConfiguration extends JobEventIdentity {
      * @throws JobEventListenerConfigurationException 作业事件监听器配置异常
      */
     JobEventListener createJobEventListener() throws JobEventListenerConfigurationException;
+
 }

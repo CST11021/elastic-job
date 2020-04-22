@@ -37,7 +37,8 @@ import java.sql.SQLException;
 public final class JobEventRdbConfiguration extends JobEventRdbIdentity implements JobEventConfiguration, Serializable {
     
     private static final long serialVersionUID = 3344410699286435226L;
-    
+
+    /** 数据库数据源 */
     private final transient DataSource dataSource;
     
     @Override

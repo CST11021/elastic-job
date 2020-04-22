@@ -36,6 +36,8 @@ public class SpringSimpleJob implements SimpleJob {
     public void execute(final ShardingContext shardingContext) {
         System.out.println(String.format("Item: %s | Time: %s | Thread: %s | %s",
                 shardingContext.getShardingItem(), new SimpleDateFormat("HH:mm:ss").format(new Date()), Thread.currentThread().getId(), "SIMPLE"));
+
+        // 从资源库查找数据，并将数据设置为处理完成
         List<Foo> data = fooRepository.findTodoData(shardingContext.getShardingParameter(), 10);
         for (Foo each : data) {
             fooRepository.setCompleted(each.getId());

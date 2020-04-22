@@ -39,11 +39,12 @@ import java.util.List;
  * @author zhangliang
  */
 public final class JobNodeStorage {
-    
-    private final CoordinatorRegistryCenter regCenter;
-    
+
+    /** 任务名称 */
     private final String jobName;
-    
+    /** 注册中心 */
+    private final CoordinatorRegistryCenter regCenter;
+    /** 用于构建作业节点的路径 */
     private final JobNodePath jobNodePath;
     
     public JobNodeStorage(final CoordinatorRegistryCenter regCenter, final String jobName) {
@@ -53,7 +54,7 @@ public final class JobNodeStorage {
     }
     
     /**
-     * 判断作业节点是否存在.
+     * 判断注册中心是否创建了该作业节点
      * 
      * @param node 作业节点名称
      * @return 作业节点是否存在
@@ -227,7 +228,7 @@ public final class JobNodeStorage {
     }
     
     /**
-     * 获取注册中心当前时间.
+     * 获取注册中心机器的当前时间
      * 
      * @return 注册中心当前时间
      */

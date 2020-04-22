@@ -29,21 +29,22 @@ import org.quartz.TriggerBuilder;
 import org.quartz.TriggerKey;
 
 /**
- * 作业调度控制器.
+ * 作业调度控制器，用于启动、暂停、恢复等作业操作，基于org.quartz.Scheduler做了一层封装
  * 
  * @author zhangliang
  */
 @RequiredArgsConstructor
 public final class JobScheduleController {
-    
+
+    /** org.quartz.Scheduler调度器 */
     private final Scheduler scheduler;
-    
+    /** 任务详细 */
     private final JobDetail jobDetail;
-    
+    /** 表示触发器ID */
     private final String triggerIdentity;
     
     /**
-     * 调度作业.
+     * 调度作业，注意，这里并不是立即执行，根据cron表达式来触发执行
      * 
      * @param cron CRON表达式
      */
@@ -59,21 +60,29 @@ public final class JobScheduleController {
     }
     
     /**
-     * 重新调度作业.
+     * 重新调度作业，内部委托给{@link Scheduler#rescheduleJob(TriggerKey, Trigger)}方法执行
      * 
      * @param cron CRON表达式
      */
     public synchronized void rescheduleJob(final String cron) {
         try {
-            CronTrigger trigger = (CronTrigger) scheduler.getTrigger(TriggerKey.triggerKey(triggerIdentity));
+            TriggerKey key = TriggerKey.triggerKey(triggerIdentity);
+            CronTrigger trigger = (CronTrigger) scheduler.getTrigger(key);
             if (!scheduler.isShutdown() && null != trigger && !cron.equals(trigger.getCronExpression())) {
+                // 当前后两个表达式不一样时，重新调度作业
                 scheduler.rescheduleJob(TriggerKey.triggerKey(triggerIdentity), createTrigger(cron));
             }
         } catch (final SchedulerException ex) {
             throw new JobSystemException(ex);
         }
     }
-    
+
+    /**
+     * 根据cron表达式创建一个触发器
+     *
+     * @param cron
+     * @return
+     */
     private CronTrigger createTrigger(final String cron) {
         return TriggerBuilder.newTrigger().withIdentity(triggerIdentity).withSchedule(CronScheduleBuilder.cronSchedule(cron).withMisfireHandlingInstructionDoNothing()).build();
     }

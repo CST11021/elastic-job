@@ -33,11 +33,24 @@ public class JavaSimpleJob implements SimpleJob {
     
     @Override
     public void execute(final ShardingContext shardingContext) {
-        System.out.println(String.format("Item: %s | Time: %s | Thread: %s | %s",
-                shardingContext.getShardingItem(), new SimpleDateFormat("HH:mm:ss").format(new Date()), Thread.currentThread().getId(), "SIMPLE"));
+        String startTime = new SimpleDateFormat("HH:mm:ss").format(new Date());
+
+
+        // 从资源库查找数据，并将数据设置为处理完成
         List<Foo> data = fooRepository.findTodoData(shardingContext.getShardingParameter(), 10);
         for (Foo each : data) {
             fooRepository.setCompleted(each.getId());
         }
+
+        try {
+            Thread.sleep(6000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        String endTime = new SimpleDateFormat("HH:mm:ss").format(new Date());
+        System.out.println(String.format("分片索引: %s | 执行时间: %s - %s | 线程: %s | 任务类型: %s",
+                shardingContext.getShardingItem(), startTime, endTime, Thread.currentThread().getId(), "SIMPLE"));
+
     }
 }

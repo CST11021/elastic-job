@@ -32,10 +32,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public final class SimpleJobConfiguration implements JobTypeConfiguration {
-    
+
+    /** 表示一个作业的配置 */
     private final JobCoreConfiguration coreConfig;
-    
+
+    /** 表示作业类型 */
     private final JobType jobType = JobType.SIMPLE;
-    
+
+    /** 作业实现类的全限定类名 */
     private final String jobClass;
 }

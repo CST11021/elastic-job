@@ -27,7 +27,8 @@ import org.apache.curator.framework.recipes.cache.TreeCacheListener;
  * @author zhangliang
  */
 public abstract class AbstractListenerManager {
-    
+
+    /** 用于作业配置数据存储 */
     private final JobNodeStorage jobNodeStorage;
     
     protected AbstractListenerManager(final CoordinatorRegistryCenter regCenter, final String jobName) {
@@ -38,7 +39,12 @@ public abstract class AbstractListenerManager {
      * 开启监听器.
      */
     public abstract void start();
-    
+
+    /**
+     * 添加监听器
+     *
+     * @param listener
+     */
     protected void addDataListener(final TreeCacheListener listener) {
         jobNodeStorage.addDataListener(listener);
     }

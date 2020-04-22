@@ -21,7 +21,7 @@ import com.dangdang.ddframe.job.executor.handler.JobExceptionHandler;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * 默认作业异常处理器.
+ * 默认作业异常处理器，只打印一个error日志
  *
  * @author zhangliang
  */

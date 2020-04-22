@@ -30,7 +30,8 @@ import java.sql.SQLException;
  * @author caohao
  */
 public final class JobEventRdbListener extends JobEventRdbIdentity implements JobEventListener {
-    
+
+    /** 资源库 */
     private final JobEventRdbStorage repository;
     
     public JobEventRdbListener(final DataSource dataSource) throws SQLException {

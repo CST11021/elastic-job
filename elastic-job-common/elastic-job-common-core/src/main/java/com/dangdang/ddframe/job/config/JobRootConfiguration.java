@@ -30,4 +30,5 @@ public interface JobRootConfiguration {
      * @return 作业类型配置
      */
     JobTypeConfiguration getTypeConfig();
+
 }

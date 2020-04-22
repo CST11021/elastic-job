@@ -26,7 +26,7 @@ import lombok.NoArgsConstructor;
 import java.lang.reflect.Type;
 
 /**
- * Gson构建器.
+ * Gson构建器：代码比较优雅，但是速度没有fastjson快
  *
  * @author caohao
  */

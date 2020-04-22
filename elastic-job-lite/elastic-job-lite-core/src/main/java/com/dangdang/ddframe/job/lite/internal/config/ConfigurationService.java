@@ -32,9 +32,10 @@ import com.google.common.base.Optional;
  * @author caohao
  */
 public final class ConfigurationService {
-    
+
+    /** 获取当前时间的服务 */
     private final TimeService timeService;
-    
+    /** 作业节点数据访问类. */
     private final JobNodeStorage jobNodeStorage;
     
     public ConfigurationService(final CoordinatorRegistryCenter regCenter, final String jobName) {
@@ -67,25 +68,43 @@ public final class ConfigurationService {
      * @param liteJobConfig 作业配置
      */
     public void persist(final LiteJobConfiguration liteJobConfig) {
+        // 检查zk上的作业类型和当前的作业配置是否冲突（检查作业类型是否一样）
         checkConflictJob(liteJobConfig);
+        // 如果不存在配置，或者配置可以覆盖的话
         if (!jobNodeStorage.isJobNodeExisted(ConfigurationNode.ROOT) || liteJobConfig.isOverwrite()) {
             jobNodeStorage.replaceJobNode(ConfigurationNode.ROOT, LiteJobConfigurationGsonFactory.toJson(liteJobConfig));
         }
     }
-    
+
+    /**
+     * 检查zk上的作业类型和当前的作业配置是否冲突（检查作业类型是否一样）
+     *
+     * @param liteJobConfig
+     */
     private void checkConflictJob(final LiteJobConfiguration liteJobConfig) {
+        // 从zk获取Lite作业配置
         Optional<LiteJobConfiguration> liteJobConfigFromZk = find();
+        // isPresent() = true 表示LiteJobConfiguration不为null
         if (liteJobConfigFromZk.isPresent() && !liteJobConfigFromZk.get().getTypeConfig().getJobClass().equals(liteJobConfig.getTypeConfig().getJobClass())) {
             throw new JobConfigurationException("Job conflict with register center. The job '%s' in register center's class is '%s', your job class is '%s'", 
                     liteJobConfig.getJobName(), liteJobConfigFromZk.get().getTypeConfig().getJobClass(), liteJobConfig.getTypeConfig().getJobClass());
         }
     }
-    
+
+    /**
+     * 从zk获取Lite作业配置
+     *
+     * @return
+     */
     private Optional<LiteJobConfiguration> find() {
+        // 如果作业的根节点都不存在，说明之前没有在zk上注册过该作业信息
         if (!jobNodeStorage.isJobNodeExisted(ConfigurationNode.ROOT)) {
             return Optional.absent();
         }
-        LiteJobConfiguration result = LiteJobConfigurationGsonFactory.fromJson(jobNodeStorage.getJobNodeDataDirectly(ConfigurationNode.ROOT));
+
+        // 从注册中心获取根节点配置
+        String json = jobNodeStorage.getJobNodeDataDirectly(ConfigurationNode.ROOT);
+        LiteJobConfiguration result = LiteJobConfigurationGsonFactory.fromJson(json);
         if (null == result) {
             // TODO 应该删除整个job node,并非仅仅删除config node
             jobNodeStorage.removeJobNodeIfExisted(ConfigurationNode.ROOT);
@@ -103,6 +122,7 @@ public final class ConfigurationService {
         if (-1  == maxTimeDiffSeconds) {
             return;
         }
+
         long timeDiff = Math.abs(timeService.getCurrentMillis() - jobNodeStorage.getRegistryCenterTime());
         if (timeDiff > maxTimeDiffSeconds * 1000L) {
             throw new JobExecutionEnvironmentException(

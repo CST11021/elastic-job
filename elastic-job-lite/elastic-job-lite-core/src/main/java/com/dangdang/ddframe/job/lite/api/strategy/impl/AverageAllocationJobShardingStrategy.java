@@ -46,6 +46,7 @@ public final class AverageAllocationJobShardingStrategy implements JobShardingSt
         if (jobInstances.isEmpty()) {
             return Collections.emptyMap();
         }
+
         Map<JobInstance, List<Integer>> result = shardingAliquot(jobInstances, shardingTotalCount);
         addAliquant(jobInstances, shardingTotalCount, result);
         return result;

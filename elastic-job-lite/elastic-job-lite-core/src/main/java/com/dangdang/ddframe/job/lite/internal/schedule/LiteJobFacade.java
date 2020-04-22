@@ -77,7 +77,12 @@ public final class LiteJobFacade implements JobFacade {
     public LiteJobConfiguration loadJobRootConfiguration(final boolean fromCache) {
         return configService.load(fromCache);
     }
-    
+
+    /**
+     * 检查作业执行环境, 比如：检查本机与注册中心的时间误差秒数是否在允许范围
+     *
+     * @throws JobExecutionEnvironmentException 作业执行环境异常
+     */
     @Override
     public void checkJobExecutionEnvironment() throws JobExecutionEnvironmentException {
         configService.checkMaxTimeDiffSecondsTolerable();

@@ -48,14 +48,16 @@ public abstract class AbstractElasticJobExecutor {
     
     @Getter(AccessLevel.PROTECTED)
     private final JobFacade jobFacade;
-    
+
+    /** 作业配置 */
     @Getter(AccessLevel.PROTECTED)
     private final JobRootConfiguration jobRootConfig;
-    
+
+    /** 作业名称 */
     private final String jobName;
-    
+    /** 用于执行作业的线程池 */
     private final ExecutorService executorService;
-    
+    /** 作业异常处理器 */
     private final JobExceptionHandler jobExceptionHandler;
     
     private final Map<Integer, String> itemErrorMessages;
@@ -68,7 +70,6 @@ public abstract class AbstractElasticJobExecutor {
         jobExceptionHandler = (JobExceptionHandler) getHandler(JobProperties.JobPropertiesEnum.JOB_EXCEPTION_HANDLER);
         itemErrorMessages = new ConcurrentHashMap<>(jobRootConfig.getTypeConfig().getCoreConfig().getShardingTotalCount(), 1);
     }
-    
     private Object getHandler(final JobProperties.JobPropertiesEnum jobPropertiesEnum) {
         String handlerClassName = jobRootConfig.getTypeConfig().getCoreConfig().getJobProperties().get(jobPropertiesEnum);
         try {
@@ -81,7 +82,7 @@ public abstract class AbstractElasticJobExecutor {
             return getDefaultHandler(jobPropertiesEnum, handlerClassName);
         }
     }
-    
+
     private Object getDefaultHandler(final JobProperties.JobPropertiesEnum jobPropertiesEnum, final String handlerClassName) {
         log.warn("Cannot instantiation class '{}', use default '{}' class.", handlerClassName, jobPropertiesEnum.getKey());
         try {
@@ -96,10 +97,12 @@ public abstract class AbstractElasticJobExecutor {
      */
     public final void execute() {
         try {
+            // 作业执行前检查下执行环境，比如：检查本机与注册中心的时间误差秒数是否在允许范围
             jobFacade.checkJobExecutionEnvironment();
         } catch (final JobExecutionEnvironmentException cause) {
             jobExceptionHandler.handleException(jobName, cause);
         }
+
         ShardingContexts shardingContexts = jobFacade.getShardingContexts();
         if (shardingContexts.isAllowSendJobEvent()) {
             jobFacade.postJobStatusTraceEvent(shardingContexts.getTaskId(), State.TASK_STAGING, String.format("Job '%s' execute begin.", jobName));
@@ -218,6 +221,6 @@ public abstract class AbstractElasticJobExecutor {
             jobExceptionHandler.handleException(jobName, cause);
         }
     }
-    
+
     protected abstract void process(ShardingContext shardingContext);
 }

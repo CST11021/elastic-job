@@ -38,7 +38,8 @@ import java.util.List;
  * @author zhangliang
  */
 public final class SchedulerFacade {
-    
+
+    /** 作业名称 */
     private final String jobName;
     
     private final ConfigurationService configService;

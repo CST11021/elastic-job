@@ -26,30 +26,59 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
- * 作业核心配置.
+ * 作业配置
  * 
  * @author zhangliang
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public final class JobCoreConfiguration {
-    
+
+    /** 作业名称 */
     private final String jobName;
-    
+    /** cron表达式，用于控制作业触发时间 */
     private final String cron;
-    
+    /** 该作业的分片总数，根据不同的分片策略 JobShardingStrategy 和 机器数量, 每台机器上创建对应的数量的job实例（线程）定时执行任务 */
     private final int shardingTotalCount;
-    
+    /** 分片序列号和参数用等号分隔，多个键值对用逗号分隔，分片序列号从0开始，不可大于或等于作业分片总数 如：0=a,1=b,2=c */
     private final String shardingItemParameters;
-    
+    /** 作业自定义参数，可通过传递该参数为作业调度的业务方法传参，用于实现带参数的作业，例：每次获取的数据量、作业实例从数据库读取的主键等 */
     private final String jobParameter;
-    
+    /** 是否开启任务执行失效转移，开启表示如果作业在一次任务执行中途宕机，允许将该次未完成的任务在另一作业节点上补偿执行 */
     private final boolean failover;
-    
+    /**
+     * 是否开启错过任务重新执行，默认为：true，
+     *
+     * 比如，定时任务是5秒，一个任务指定时间是6秒，当 misfire = true 时：
+     * 分片索引: 0 | 执行时间: 21:33:00 - 21:33:06 | 线程: 27 | 任务类型: SIMPLE  记录错过了一次
+     * 分片索引: 0 | 执行时间: 21:33:06 - 21:33:12 | 线程: 27 | 任务类型: SIMPLE  立即执行
+     * 分片索引: 0 | 执行时间: 21:33:15 - 21:33:21 | 线程: 27 | 任务类型: SIMPLE  记录错过了一次
+     * 分片索引: 0 | 执行时间: 21:33:21 - 21:33:27 | 线程: 27 | 任务类型: SIMPLE  立即执行
+     * 分片索引: 0 | 执行时间: 21:33:30 - 21:33:36 | 线程: 27 | 任务类型: SIMPLE  记录错过了一次
+     * 分片索引: 0 | 执行时间: 21:33:36 - 21:33:42 | 线程: 27 | 任务类型: SIMPLE  立即执行
+     * 分片索引: 0 | 执行时间: 21:33:45 - 21:33:51 | 线程: 27 | 任务类型: SIMPLE  记录错过了一次
+     * 分片索引: 0 | 执行时间: 21:33:51 - 21:33:57 | 线程: 27 | 任务类型: SIMPLE  立即执行
+     * 分片索引: 0 | 执行时间: 21:34:00 - 21:34:06 | 线程: 27 | 任务类型: SIMPLE  记录错过了一次
+     * 分片索引: 0 | 执行时间: 21:34:06 - 21:34:12 | 线程: 27 | 任务类型: SIMPLE  立即执行
+     * ...
+     *
+     *
+     * 比如，定时任务是5秒，一个任务指定时间是6秒，当 misfire = true 时：
+     * 分片索引: 0 | 执行时间: 21:42:05 - 21:42:11 | 线程: 27 | 任务类型: SIMPLE
+     * 分片索引: 0 | 执行时间: 21:42:15 - 21:42:21 | 线程: 27 | 任务类型: SIMPLE
+     * 分片索引: 0 | 执行时间: 21:42:25 - 21:42:31 | 线程: 27 | 任务类型: SIMPLE
+     * 分片索引: 0 | 执行时间: 21:42:35 - 21:42:41 | 线程: 27 | 任务类型: SIMPLE
+     * 分片索引: 0 | 执行时间: 21:42:45 - 21:42:51 | 线程: 27 | 任务类型: SIMPLE
+     *
+     */
     private final boolean misfire;
-    
+    /** 作业描述 */
     private final String description;
-    
+    /**
+     * 配置jobProperties定义的枚举控制Elastic-Job的实现细节
+     * JOB_EXCEPTION_HANDLER用于扩展异常处理类：比如可以设置该枚举对应的异常处理实现类，默认的实现类是打印一行error日志
+     * EXECUTOR_SERVICE_HANDLER用于扩展作业处理线程池类：比如可以设置该枚举对应的线程池服务
+     */
     private final JobProperties jobProperties;
     
     /**
@@ -68,21 +97,13 @@ public final class JobCoreConfiguration {
     public static class Builder {
         
         private final String jobName;
-        
         private final String cron;
-        
         private final int shardingTotalCount;
-        
         private String shardingItemParameters = "";
-        
         private String jobParameter = "";
-        
         private boolean failover;
-        
         private boolean misfire = true;
-        
         private String description = "";
-        
         private final JobProperties jobProperties = new JobProperties();
         
         /**

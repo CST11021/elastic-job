@@ -19,9 +19,13 @@ package com.dangdang.ddframe.job.fixture.handler;
 
 import com.dangdang.ddframe.job.executor.handler.JobExceptionHandler;
 
+/**
+ * 忽略异常的作业
+ */
 public final class IgnoreJobExceptionHandler implements JobExceptionHandler {
     
     @Override
     public void handleException(final String jobName, final Throwable cause) {
     }
+
 }

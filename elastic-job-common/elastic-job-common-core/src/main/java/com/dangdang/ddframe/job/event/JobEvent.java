@@ -18,7 +18,7 @@
 package com.dangdang.ddframe.job.event;
 
 /**
- * 作业事件接口.
+ * 作业事件接口，该接口有两个实现：作业执行事件（JobExecutionEvent）和作业状态痕迹事件（JobStatusTraceEvent）
  *
  * @author zhangliang
  */

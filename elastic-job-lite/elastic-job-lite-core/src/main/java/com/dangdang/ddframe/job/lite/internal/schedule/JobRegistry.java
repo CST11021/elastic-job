@@ -65,9 +65,9 @@ public final class JobRegistry {
     /**
      * 添加作业调度控制器.
      * 
-     * @param jobName 作业名称
+     * @param jobName               作业名称
      * @param jobScheduleController 作业调度控制器
-     * @param regCenter 注册中心
+     * @param regCenter             注册中心
      */
     public void registerJob(final String jobName, final JobScheduleController jobScheduleController, final CoordinatorRegistryCenter regCenter) {
         schedulerMap.put(jobName, jobScheduleController);
@@ -148,7 +148,7 @@ public final class JobRegistry {
     }
     
     /**
-     * 设置当前分片总数.
+     * 设置作业当前分片总数.
      *
      * @param jobName 作业名称
      * @param currentShardingTotalCount 当前分片总数

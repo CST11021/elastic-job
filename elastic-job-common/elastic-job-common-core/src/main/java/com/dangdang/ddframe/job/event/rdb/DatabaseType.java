@@ -29,8 +29,13 @@ import java.util.Arrays;
  * @author caohao
  */
 public enum DatabaseType {
-    
-    H2("H2"), MySQL("MySQL"), Oracle("Oracle"), SQLServer("Microsoft SQL Server"), DB2("DB2"), PostgreSQL("PostgreSQL");
+
+    /** 数据库类型 */
+    H2("H2"),
+    MySQL("MySQL"),
+    Oracle("Oracle"),
+    SQLServer("Microsoft SQL Server"),
+    DB2("DB2"), PostgreSQL("PostgreSQL");
     
     private final String productName;
     

@@ -40,7 +40,7 @@ public interface JobFacade {
     JobRootConfiguration loadJobRootConfiguration(boolean fromCache);
     
     /**
-     * 检查作业执行环境.
+     * 检查作业执行环境，比如：检查本机与注册中心的时间误差秒数是否在允许范围
      * 
      * @throws JobExecutionEnvironmentException 作业执行环境异常
      */
@@ -104,7 +104,8 @@ public interface JobFacade {
      */
     boolean isEligibleForJobRunning();
     
-    /**判断是否需要重分片.
+    /**
+     * 判断是否需要重分片.
      *
      * @return 是否需要重分片
      */

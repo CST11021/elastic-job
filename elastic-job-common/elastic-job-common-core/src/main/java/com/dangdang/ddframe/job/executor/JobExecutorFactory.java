@@ -36,7 +36,7 @@ import lombok.NoArgsConstructor;
 public final class JobExecutorFactory {
     
     /**
-     * 获取作业执行器.
+     * 根据作业类型，获取作业执行器.
      *
      * @param elasticJob 分布式弹性作业
      * @param jobFacade 作业内部服务门面服务
@@ -47,12 +47,15 @@ public final class JobExecutorFactory {
         if (null == elasticJob) {
             return new ScriptJobExecutor(jobFacade);
         }
+
         if (elasticJob instanceof SimpleJob) {
             return new SimpleJobExecutor((SimpleJob) elasticJob, jobFacade);
         }
+
         if (elasticJob instanceof DataflowJob) {
             return new DataflowJobExecutor((DataflowJob) elasticJob, jobFacade);
         }
+
         throw new JobConfigurationException("Cannot support job type '%s'", elasticJob.getClass().getCanonicalName());
     }
 }

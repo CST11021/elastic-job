@@ -25,4 +25,5 @@ public class SimpleJobExceptionHandler implements JobExceptionHandler {
     public void handleException(final String jobName, final Throwable cause) {
         throw new RuntimeException(cause);
     }
+
 }

@@ -33,4 +33,5 @@ public interface SimpleJob extends ElasticJob {
      * @param shardingContext 分片上下文
      */
     void execute(ShardingContext shardingContext);
+
 }
