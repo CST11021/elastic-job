@@ -17,7 +17,8 @@ import org.apache.curator.framework.state.ConnectionStateListener;
  * @author zhangliang
  */
 public final class RegistryCenterConnectionStateListener implements ConnectionStateListener {
-    
+
+    /** 作业名称 */
     private final String jobName;
     
     private final ServerService serverService;
@@ -35,17 +36,31 @@ public final class RegistryCenterConnectionStateListener implements ConnectionSt
         shardingService = new ShardingService(regCenter, jobName);
         executionService = new ExecutionService(regCenter, jobName);
     }
-    
+
+    /**
+     * 当连接丢失的时候：将作业暂停
+     *
+     *
+     * @param client
+     * @param newState
+     */
     @Override
     public void stateChanged(final CuratorFramework client, final ConnectionState newState) {
         if (JobRegistry.getInstance().isShutdown(jobName)) {
             return;
         }
+
         JobScheduleController jobScheduleController = JobRegistry.getInstance().getJobScheduleController(jobName);
+
+        // SUSPENDED:表示连接丢失但是连接尚未超时的时候
+        // LOST:表示连接丢失了
         if (ConnectionState.SUSPENDED == newState || ConnectionState.LOST == newState) {
             jobScheduleController.pauseJob();
         } else if (ConnectionState.RECONNECTED == newState) {
-            serverService.persistOnline(serverService.isEnableServer(JobRegistry.getInstance().getJobInstance(jobName).getIp()));
+            // 判断zk上的servers/${ip}节点的ip和入参的ip是否一致
+            boolean flag = serverService.isEnableServer(JobRegistry.getInstance().getJobInstance(jobName).getIp());
+            // 当zk上的servers/${ip}节点的ip和本地实例的IP不一致时，设置节点数据为DISABLED
+            serverService.persistOnline(flag);
             instanceService.persistOnline();
             executionService.clearRunningInfo(shardingService.getLocalShardingItems());
             jobScheduleController.resumeJob();

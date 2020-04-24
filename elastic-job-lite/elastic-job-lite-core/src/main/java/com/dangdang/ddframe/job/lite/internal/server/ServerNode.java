@@ -29,16 +29,14 @@ import java.util.regex.Pattern;
  * @author zhangliang
  */
 public final class ServerNode {
-    
-    /**
-     * 服务器信息根节点.
-     */
-    public static final String ROOT = "servers";
-    
-    private static final String SERVERS = ROOT + "/%s";
-    
+
+    /** 作业名称 */
     private final String jobName;
-    
+    /** 服务器信息根节点. */
+    public static final String ROOT = "servers";
+    /** servers/%s */
+    private static final String SERVERS = ROOT + "/%s";
+    /** 用于获取zk上的节点路径类 */
     private final JobNodePath jobNodePath;
     
     public ServerNode(final String jobName) {
@@ -47,7 +45,7 @@ public final class ServerNode {
     }
     
     /**
-     * 判断给定路径是否为作业服务器路径.
+     * 判断给定路径是否为作业服务器路径：判断该path是否符合：${jobName}/servers/${ip} 规则
      *
      * @param path 待判断的路径
      * @return 是否为作业服务器路径
@@ -57,15 +55,22 @@ public final class ServerNode {
     }
     
     /**
-     * 判断给定路径是否为本地作业服务器路径.
+     * 判断给定路径是否为本地作业服务器路径：判断path是否为该job实例的ip
      *
      * @param path 待判断的路径
      * @return 是否为本地作业服务器路径
      */
     public boolean isLocalServerPath(final String path) {
+        // 该作业实际在zk上的 ${jobName}/servers/${ip} 是否和path一致
         return path.equals(jobNodePath.getFullPath(String.format(SERVERS, JobRegistry.getInstance().getJobInstance(jobName).getIp())));
     }
-    
+
+    /**
+     * 返回 servers/${ip}
+     *
+     * @param ip
+     * @return
+     */
     String getServerNode(final String ip) {
         return String.format(SERVERS, ip);
     }

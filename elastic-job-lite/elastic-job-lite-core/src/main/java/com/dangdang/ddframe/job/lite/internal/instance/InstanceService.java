@@ -45,9 +45,10 @@ public final class InstanceService {
     }
     
     /**
-     * 持久化作业运行实例上线相关信息.
+     * 持久化作业运行实例上线相关信息：当作业开始运行时，会调用该方法保存作业信息
      */
     public void persistOnline() {
+        // 添加临时节点：instances/172.16.120.135@-@97544
         jobNodeStorage.fillEphemeralJobNode(instanceNode.getLocalInstanceNode(), "");
     }
     
@@ -59,9 +60,10 @@ public final class InstanceService {
     }
     
     /**
-     * 清理作业触发标记.
+     * 清理作业触发标记：将instances/172.16.120.135@-@97544节点设置空串
      */
     public void clearTriggerFlag() {
+        // 将instances/172.16.120.135@-@97544节点设置空串
         jobNodeStorage.updateJobNode(instanceNode.getLocalInstanceNode(), "");
     }
     
@@ -72,7 +74,9 @@ public final class InstanceService {
      */
     public List<JobInstance> getAvailableJobInstances() {
         List<JobInstance> result = new LinkedList<>();
+        // 遍历${jobName}/instances下的子节点
         for (String each : jobNodeStorage.getJobNodeChildrenKeys(InstanceNode.ROOT)) {
+            // each例如：172.16.121.3@-@1857
             JobInstance jobInstance = new JobInstance(each);
             if (serverService.isEnableServer(jobInstance.getIp())) {
                 result.add(new JobInstance(each));
@@ -82,7 +86,7 @@ public final class InstanceService {
     }
     
     /**
-     * 判断当前作业运行实例的节点是否仍然存在.
+     * 判断注册中心是否创建了该作业节点.
      * 
      * @return 当前作业运行实例的节点是否仍然存在
      */

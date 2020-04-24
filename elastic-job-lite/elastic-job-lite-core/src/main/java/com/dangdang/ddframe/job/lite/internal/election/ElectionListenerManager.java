@@ -32,7 +32,8 @@ import org.apache.curator.framework.recipes.cache.TreeCacheEvent.Type;
  * @author zhangliang
  */
 public final class ElectionListenerManager extends AbstractListenerManager {
-    
+
+    /** 作业名称 */
     private final String jobName;
     
     private final LeaderNode leaderNode;
@@ -57,11 +58,14 @@ public final class ElectionListenerManager extends AbstractListenerManager {
         addDataListener(new LeaderElectionJobListener());
         addDataListener(new LeaderAbdicationJobListener());
     }
-    
+
+    /**
+     * Leader节点选举监听
+     */
     class LeaderElectionJobListener extends AbstractJobListener {
 
         /**
-         * 节点数据变更时触发
+         * 节点数据变更时触发，leader/election/instance节点被移除 && servers/${ip}节点的数据不是DISABLED &&
          *
          * @param path          节点路径
          * @param eventType     事件类型
@@ -69,38 +73,83 @@ public final class ElectionListenerManager extends AbstractListenerManager {
          */
         @Override
         protected void dataChanged(final String path, final Type eventType, final String data) {
+
             if (!JobRegistry.getInstance().isShutdown(jobName) && (isActiveElection(path, data) || isPassiveElection(path, eventType))) {
                 leaderService.electLeader();
             }
+
         }
-        
+
+        /**
+         * 是否触发选举：如果leader/election/instance节点不存在 && servers/${ip}节点的数据不是DISABLED
+         *
+         * @param path
+         * @param data
+         * @return
+         */
         private boolean isActiveElection(final String path, final String data) {
+            // 如果leader/election/instance节点不存在 && servers/${ip}节点的数据不是DISABLED
             return !leaderService.hasLeader() && isLocalServerEnabled(path, data);
         }
-        
+
+        /**
+         * 被动触发选举：当leader节点故障，并且本地作业实例ip是合法的
+         *
+         * @param path
+         * @param eventType
+         * @return
+         */
         private boolean isPassiveElection(final String path, final Type eventType) {
+            // 当leader节点故障，并且本地作业实例ip是合法的
             return isLeaderCrashed(path, eventType) && serverService.isAvailableServer(JobRegistry.getInstance().getJobInstance(jobName).getIp());
         }
-        
+
+        /**
+         * 当节点${jobName}/leader/election/instance被移除，说明Leader节点故障了
+         *
+         * @param path
+         * @param eventType
+         * @return
+         */
         private boolean isLeaderCrashed(final String path, final Type eventType) {
             return leaderNode.isLeaderInstancePath(path) && Type.NODE_REMOVED == eventType;
         }
-        
+
+        /**
+         * 是否开启作业实例，servers/${ip} 节点的数据不是DISABLED
+         *
+         * @param path
+         * @param data
+         * @return
+         */
         private boolean isLocalServerEnabled(final String path, final String data) {
+            // servers/${ip} 节点的数据不是DISABLED
             return serverNode.isLocalServerPath(path) && !ServerStatus.DISABLED.name().equals(data);
         }
     }
-    
+
+    /**
+     * 移除Leader节点监听：leader节点的作业停止了，则移除Leader节点
+     */
     class LeaderAbdicationJobListener extends AbstractJobListener {
         
         @Override
         protected void dataChanged(final String path, final Type eventType, final String data) {
+            // leader节点的作业停止了，则移除Leader节点
             if (leaderService.isLeader() && isLocalServerDisabled(path, data)) {
                 leaderService.removeLeader();
             }
         }
-        
+
+        /**
+         * 判断本地作业是否被禁用了
+         *
+         * @param path
+         * @param data
+         * @return
+         */
         private boolean isLocalServerDisabled(final String path, final String data) {
+            // 该path对应该作业实例的配置 && 作业被DISABLED
             return serverNode.isLocalServerPath(path) && ServerStatus.DISABLED.name().equals(data);
         }
     }

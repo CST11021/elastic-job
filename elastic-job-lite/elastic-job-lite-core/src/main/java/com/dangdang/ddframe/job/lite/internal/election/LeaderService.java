@@ -76,16 +76,17 @@ public final class LeaderService {
     }
     
     /**
-     * 判断当前节点是否是主节点.
+     * 判断当前节点是否是主节点：leader/election/instance节点的数据 == jobInstanceId
      *
      * @return 当前节点是否是主节点
      */
     public boolean isLeader() {
-        return !JobRegistry.getInstance().isShutdown(jobName) && JobRegistry.getInstance().getJobInstance(jobName).getJobInstanceId().equals(jobNodeStorage.getJobNodeData(LeaderNode.INSTANCE));
+        return !JobRegistry.getInstance().isShutdown(jobName) &&
+                JobRegistry.getInstance().getJobInstance(jobName).getJobInstanceId().equals(jobNodeStorage.getJobNodeData(LeaderNode.INSTANCE));
     }
     
     /**
-     * 判断是否已经有主节点.
+     * 判断是否已经有主节点，判断leader/election/instance节点是否存在
      * 
      * @return 是否已经有主节点
      */

@@ -47,7 +47,10 @@ public final class TriggerListenerManager extends AbstractListenerManager {
     public void start() {
         addDataListener(new JobTriggerStatusJobListener());
     }
-    
+
+    /**
+     * 监听${namaSpace}/${jobName}/instances/172.16.120.135@-@97708路径
+     */
     class JobTriggerStatusJobListener extends AbstractJobListener {
         
         @Override
@@ -55,6 +58,8 @@ public final class TriggerListenerManager extends AbstractListenerManager {
             if (!InstanceOperation.TRIGGER.name().equals(data) || !instanceNode.isLocalInstancePath(path) || Type.NODE_UPDATED != eventType) {
                 return;
             }
+
+            // 清理作业触发标记：将instances/172.16.120.135@-@97544节点设置空串
             instanceService.clearTriggerFlag();
             if (!JobRegistry.getInstance().isShutdown(jobName) && !JobRegistry.getInstance().isJobRunning(jobName)) {
                 // TODO 目前是作业运行时不能触发, 未来改为堆积式触发

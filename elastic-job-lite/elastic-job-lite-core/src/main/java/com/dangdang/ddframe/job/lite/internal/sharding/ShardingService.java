@@ -48,9 +48,9 @@ import java.util.Map;
  */
 @Slf4j
 public final class ShardingService {
-    
+    /** 作业名称 */
     private final String jobName;
-    
+    /** 作业节点数据访问类 */
     private final JobNodeStorage jobNodeStorage;
     
     private final LeaderService leaderService;
@@ -64,7 +64,9 @@ public final class ShardingService {
     private final ExecutionService executionService;
 
     private final JobNodePath jobNodePath;
-    
+
+
+
     public ShardingService(final CoordinatorRegistryCenter regCenter, final String jobName) {
         this.jobName = jobName;
         jobNodeStorage = new JobNodeStorage(regCenter, jobName);
@@ -75,16 +77,19 @@ public final class ShardingService {
         executionService = new ExecutionService(regCenter, jobName);
         jobNodePath = new JobNodePath(jobName);
     }
-    
+
+
+
+
     /**
-     * 设置需要重新分片的标记.
+     * 设置需要重新分片的标记：${jobName}/leader/sharding/necessary节点，表示需要重新分片
      */
     public void setReshardingFlag() {
         jobNodeStorage.createJobNodeIfNeeded(ShardingNode.NECESSARY);
     }
     
     /**
-     * 判断是否需要重分片.
+     * 判断是否需要重分片，如果在${jobName}/leader/sharding/necessary节点，表示需要重新分片
      * 
      * @return 是否需要重分片
      */
@@ -100,14 +105,17 @@ public final class ShardingService {
      * </p>
      */
     public void shardingIfNecessary() {
+
         List<JobInstance> availableJobInstances = instanceService.getAvailableJobInstances();
         if (!isNeedSharding() || availableJobInstances.isEmpty()) {
             return;
         }
+
         if (!leaderService.isLeaderUntilBlock()) {
             blockUntilShardingCompleted();
             return;
         }
+
         waitingOtherJobCompleted();
         LiteJobConfiguration liteJobConfig = configService.load(false);
         int shardingTotalCount = liteJobConfig.getTypeConfig().getCoreConfig().getShardingTotalCount();

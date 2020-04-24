@@ -24,15 +24,16 @@ import com.dangdang.ddframe.job.reg.base.CoordinatorRegistryCenter;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent.Type;
 
 /**
- * 重调度监听管理器.
+ * 重调度监听管理器
  * 
  * @author caohao
  * @author zhangliang
  */
 public final class RescheduleListenerManager extends AbstractListenerManager {
-    
+    /** 用于获取zk上作业配置的节点路径 */
     private final ConfigurationNode configNode;
-    
+
+    /** 监听的作业节点 */
     private final String jobName;
     
     public RescheduleListenerManager(final CoordinatorRegistryCenter regCenter, final String jobName) {
@@ -45,13 +46,24 @@ public final class RescheduleListenerManager extends AbstractListenerManager {
     public void start() {
         addDataListener(new CronSettingAndJobEventChangedJobListener());
     }
-    
+
+    /**
+     * 监听zk上的cron表达式，当cron发生变更时，会获取通过{@link com.dangdang.ddframe.job.lite.internal.schedule.JobScheduleController#rescheduleJob(String)}重新调度作业
+     */
     class CronSettingAndJobEventChangedJobListener extends AbstractJobListener {
-        
+
+        /**
+         * 监听 config 节点配置，如果对应cron发生变化时，则重新调度作业
+         *
+         * @param path
+         * @param eventType
+         * @param data
+         */
         @Override
         protected void dataChanged(final String path, final Type eventType, final String data) {
             if (configNode.isConfigPath(path) && Type.NODE_UPDATED == eventType && !JobRegistry.getInstance().isShutdown(jobName)) {
-                JobRegistry.getInstance().getJobScheduleController(jobName).rescheduleJob(LiteJobConfigurationGsonFactory.fromJson(data).getTypeConfig().getCoreConfig().getCron());
+                JobRegistry.getInstance().getJobScheduleController(jobName)
+                        .rescheduleJob(LiteJobConfigurationGsonFactory.fromJson(data).getTypeConfig().getCoreConfig().getCron());
             }
         }
     }

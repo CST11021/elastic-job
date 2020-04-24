@@ -20,14 +20,15 @@ package com.dangdang.ddframe.job.lite.internal.config;
 import com.dangdang.ddframe.job.lite.internal.storage.JobNodePath;
 
 /**
- * 配置节点路径.
+ * 作业节点的配置类，可获取zk上的作业配置节点路径
  * 
  * @author zhangliang
  */
 public final class ConfigurationNode {
-    
+
+    /** 作业节点的跟路径 */
     static final String ROOT = "config";
-    
+    /** 用于获取对应作业在zk上的配置节点路径 */
     private final JobNodePath jobNodePath;
     
     public ConfigurationNode(final String jobName) {
@@ -35,7 +36,7 @@ public final class ConfigurationNode {
     }
     
     /**
-     * 判断是否为作业配置根路径.
+     * 判断该路径是否对应 /${jobName}/config 路径
      * 
      * @param path 节点路径
      * @return 是否为作业配置根路径

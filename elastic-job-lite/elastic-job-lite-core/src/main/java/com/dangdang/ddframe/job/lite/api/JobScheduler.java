@@ -60,9 +60,9 @@ public class JobScheduler {
     
     private static final String JOB_FACADE_DATA_MAP_KEY = "jobFacade";
 
-    /** 作业配置 */
+    /** 作业的详细配置 */
     private final LiteJobConfiguration liteJobConfig;
-    /** 作业注册中心 */
+    /** 作业注册中心，本质是连接zk的客户端 */
     private final CoordinatorRegistryCenter regCenter;
     
     /** TODO 为测试使用, 测试用例不能反复new monitor service, 以后需要把MonitorService重构为单例 */
@@ -70,15 +70,15 @@ public class JobScheduler {
     private final SchedulerFacade schedulerFacade;
     
     private final JobFacade jobFacade;
-    
+
+
+
     public JobScheduler(final CoordinatorRegistryCenter regCenter, final LiteJobConfiguration liteJobConfig, final ElasticJobListener... elasticJobListeners) {
         this(regCenter, liteJobConfig, new JobEventBus(), elasticJobListeners);
     }
-    
     public JobScheduler(final CoordinatorRegistryCenter regCenter, final LiteJobConfiguration liteJobConfig, final JobEventConfiguration jobEventConfig, final ElasticJobListener... elasticJobListeners) {
         this(regCenter, liteJobConfig, new JobEventBus(jobEventConfig), elasticJobListeners);
     }
-
     /**
      *
      * @param regCenter             注册中心
@@ -100,31 +100,21 @@ public class JobScheduler {
         jobFacade = new LiteJobFacade(regCenter, liteJobConfig.getJobName(), Arrays.asList(elasticJobListeners), jobEventBus);
     }
 
-    /**
-     * 给每个作业监听设置GuaranteeService
-     *
-     * @param regCenter
-     * @param elasticJobListeners
-     */
-    private void setGuaranteeServiceForElasticJobListeners(final CoordinatorRegistryCenter regCenter, final List<ElasticJobListener> elasticJobListeners) {
-        GuaranteeService guaranteeService = new GuaranteeService(regCenter, liteJobConfig.getJobName());
-        for (ElasticJobListener each : elasticJobListeners) {
-            if (each instanceof AbstractDistributeOnceElasticJobListener) {
-                ((AbstractDistributeOnceElasticJobListener) each).setGuaranteeService(guaranteeService);
-            }
-        }
-    }
+
     
     /**
-     * 初始化作业.
+     * 初始化作业：
+     * 1、将作业配置保存到zk上的/config节点；
+     * 2、
      */
     public void init() {
-        // 更新zk上的作业配置
+        // 将作业配置保存到zk上的/config节点
         LiteJobConfiguration liteJobConfigFromRegCenter = schedulerFacade.updateJobConfiguration(liteJobConfig);
 
-        // 设置作业当前分片总数
         String jobName = liteJobConfigFromRegCenter.getJobName();
         int shardingTotalCount = liteJobConfigFromRegCenter.getTypeConfig().getCoreConfig().getShardingTotalCount();
+
+        // 将作业当前分片的总数保存到注册表
         JobRegistry.getInstance().setCurrentShardingTotalCount(jobName, shardingTotalCount);
 
         // 构建JobScheduleController
@@ -143,6 +133,7 @@ public class JobScheduler {
     }
 
     /**
+     * 创建作业详情
      *
      * @param jobClass
      * @return
@@ -168,7 +159,7 @@ public class JobScheduler {
     }
 
     /**
-     * 创建一个调度器
+     * 创建一个 org.quartz.Scheduler 调度器
      *
      * @return
      */
@@ -199,5 +190,20 @@ public class JobScheduler {
         result.put("org.quartz.plugin.shutdownhook.class", JobShutdownHookPlugin.class.getName());
         result.put("org.quartz.plugin.shutdownhook.cleanShutdown", Boolean.TRUE.toString());
         return result;
+    }
+
+    /**
+     * 给每个作业监听设置GuaranteeService
+     *
+     * @param regCenter
+     * @param elasticJobListeners
+     */
+    private void setGuaranteeServiceForElasticJobListeners(final CoordinatorRegistryCenter regCenter, final List<ElasticJobListener> elasticJobListeners) {
+        GuaranteeService guaranteeService = new GuaranteeService(regCenter, liteJobConfig.getJobName());
+        for (ElasticJobListener each : elasticJobListeners) {
+            if (each instanceof AbstractDistributeOnceElasticJobListener) {
+                ((AbstractDistributeOnceElasticJobListener) each).setGuaranteeService(guaranteeService);
+            }
+        }
     }
 }

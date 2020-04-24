@@ -95,13 +95,15 @@ public final class SchedulerFacade {
     }
     
     /**
-     * 更新作业配置.
+     * 将作业配置保存到zk上的/config节点
      *
      * @param liteJobConfig 作业配置
      * @return 更新后的作业配置
      */
     public LiteJobConfiguration updateJobConfiguration(final LiteJobConfiguration liteJobConfig) {
+        // 将作业配置保存到zk上的/config节点
         configService.persist(liteJobConfig);
+        // 从zk读取作业配置
         return configService.load(false);
     }
     
@@ -113,6 +115,7 @@ public final class SchedulerFacade {
     public void registerStartUpInfo(final boolean enabled) {
         listenerManager.startAllListeners();
         leaderService.electLeader();
+        // enabled = false 时，设置servers/${ip}节点数据为DISABLED
         serverService.persistOnline(enabled);
         instanceService.persistOnline();
         shardingService.setReshardingFlag();

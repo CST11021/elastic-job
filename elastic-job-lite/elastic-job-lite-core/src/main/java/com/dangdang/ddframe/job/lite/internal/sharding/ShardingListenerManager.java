@@ -58,7 +58,10 @@ public final class ShardingListenerManager extends AbstractListenerManager {
         addDataListener(new ShardingTotalCountChangedJobListener());
         addDataListener(new ListenServersChangedJobListener());
     }
-    
+
+    /**
+     * 监听/${jobName}/config的节点配置，当shardingTotalCount变更时，
+     */
     class ShardingTotalCountChangedJobListener extends AbstractJobListener {
         
         @Override

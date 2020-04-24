@@ -30,7 +30,8 @@ import org.apache.curator.framework.recipes.cache.TreeCacheEvent.Type;
  * @author zhangliang
  */
 public final class ShutdownListenerManager extends AbstractListenerManager {
-    
+
+    /** 监听的作业 */
     private final String jobName;
     
     private final InstanceNode instanceNode;
@@ -51,7 +52,10 @@ public final class ShutdownListenerManager extends AbstractListenerManager {
     public void start() {
         addDataListener(new InstanceShutdownStatusJobListener());
     }
-    
+
+    /**
+     * 监听/instances/172.16.120.135@-@97708节点，如果该节点被移除，则将作业实例shutdown
+     */
     class InstanceShutdownStatusJobListener extends AbstractJobListener {
         
         @Override
@@ -61,11 +65,23 @@ public final class ShutdownListenerManager extends AbstractListenerManager {
                 schedulerFacade.shutdownInstance();
             }
         }
-        
+
+        /**
+         * 判断/instances/172.16.120.135@-@97708该节点是否被移除
+         *
+         * @param path
+         * @param eventType
+         * @return
+         */
         private boolean isRemoveInstance(final String path, final Type eventType) {
             return instanceNode.isLocalInstancePath(path) && Type.NODE_REMOVED == eventType;
         }
-        
+
+        /**
+         * 判断注册中心该作业节点是否存在
+         *
+         * @return
+         */
         private boolean isReconnectedRegistryCenter() {
             return instanceService.isLocalJobInstanceExisted();
         }

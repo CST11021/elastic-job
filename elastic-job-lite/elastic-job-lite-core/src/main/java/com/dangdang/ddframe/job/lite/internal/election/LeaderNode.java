@@ -26,15 +26,13 @@ import com.dangdang.ddframe.job.lite.internal.storage.JobNodePath;
  */
 public final class LeaderNode {
     
-    /**
-     * 主节点根路径.
-     */
+    /** 主节点根路径. */
     public static final String ROOT = "leader";
-    
+    /** leader/election */
     static final String ELECTION_ROOT = ROOT + "/election";
-    
+    /** leader/election/instance */
     static final String INSTANCE = ELECTION_ROOT + "/instance";
-    
+    /** /latch */
     static final String LATCH = ELECTION_ROOT + "/latch";
     
     private final JobNodePath jobNodePath;
@@ -42,7 +40,13 @@ public final class LeaderNode {
     LeaderNode(final String jobName) {
         jobNodePath = new JobNodePath(jobName);
     }
-    
+
+    /**
+     * 判断入参path是否等于：${jobName}/leader/election/instance
+     *
+     * @param path
+     * @return
+     */
     boolean isLeaderInstancePath(final String path) {
         return jobNodePath.getFullPath(INSTANCE).equals(path);
     }

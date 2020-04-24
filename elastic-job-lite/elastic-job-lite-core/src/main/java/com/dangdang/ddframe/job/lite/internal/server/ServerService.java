@@ -31,11 +31,11 @@ import java.util.List;
  * @author caohao
  */
 public final class ServerService {
-    
+    /** 作业名称 */
     private final String jobName;
-    
+    /** 作业节点数据访问类 */
     private final JobNodeStorage jobNodeStorage;
-    
+    /** 用于获取servers下的节点路径 */
     private final ServerNode serverNode;
     
     public ServerService(final CoordinatorRegistryCenter regCenter, final String jobName) {
@@ -45,13 +45,18 @@ public final class ServerService {
     }
     
     /**
-     * 持久化作业服务器上线信息.
-     * 
+     * 持久化作业服务器上线信息，
+     * 当enabled = true 时：设置servers/${ip}路径的value为空串
+     * 当enabled = false 时：设置servers/${ip}路径的value为DISABLED
+     *
      * @param enabled 作业是否启用
      */
     public void persistOnline(final boolean enabled) {
         if (!JobRegistry.getInstance().isShutdown(jobName)) {
-            jobNodeStorage.fillJobNode(serverNode.getServerNode(JobRegistry.getInstance().getJobInstance(jobName).getIp()), enabled ? "" : ServerStatus.DISABLED.name());
+            // 获取节点路径：servers/${ip}
+            String path = serverNode.getServerNode(JobRegistry.getInstance().getJobInstance(jobName).getIp());
+            // 当zk上的servers/${ip}节点的ip和本地实例的IP不一致时，设置节点数据为DISABLED
+            jobNodeStorage.fillJobNode(path, enabled ? "" : ServerStatus.DISABLED.name());
         }
     }
     
@@ -72,6 +77,9 @@ public final class ServerService {
     
     /**
      * 判断作业服务器是否可用.
+     *
+     * 1、判断zk上的servers/${ip}节点的ip和入参的ip是否一致
+     * 2、判断zk上instances/下的是否存在该ip
      * 
      * @param ip 作业服务器IP地址
      * @return 作业服务器是否可用
@@ -79,7 +87,13 @@ public final class ServerService {
     public boolean isAvailableServer(final String ip) {
         return isEnableServer(ip) && hasOnlineInstances(ip);
     }
-    
+
+    /**
+     * 判断zk上instances/下的是否存在该ip
+     *
+     * @param ip
+     * @return
+     */
     private boolean hasOnlineInstances(final String ip) {
         for (String each : jobNodeStorage.getJobNodeChildrenKeys(InstanceNode.ROOT)) {
             if (each.startsWith(ip)) {
@@ -90,7 +104,7 @@ public final class ServerService {
     }
     
     /**
-     * 判断服务器是否启用.
+     * 判断zk上的servers/${ip}节点的ip和入参的ip是否一致
      *
      * @param ip 作业服务器IP地址
      * @return 服务器是否启用

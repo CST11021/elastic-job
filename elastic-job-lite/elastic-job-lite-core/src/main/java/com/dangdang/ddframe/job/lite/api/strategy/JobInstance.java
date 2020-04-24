@@ -37,7 +37,7 @@ public final class JobInstance {
     private static final String DELIMITER = "@-@";
     
     /**
-     * 作业实例主键.
+     * 作业实例主键，例如：172.16.120.135@-@97544
      */
     private final String jobInstanceId;
     
@@ -53,4 +53,5 @@ public final class JobInstance {
     public String getIp() {
         return jobInstanceId.substring(0, jobInstanceId.indexOf(DELIMITER));
     }
+
 }

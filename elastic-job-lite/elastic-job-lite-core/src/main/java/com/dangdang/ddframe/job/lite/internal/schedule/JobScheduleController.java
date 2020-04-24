@@ -60,7 +60,9 @@ public final class JobScheduleController {
     }
     
     /**
-     * 重新调度作业，内部委托给{@link Scheduler#rescheduleJob(TriggerKey, Trigger)}方法执行
+     * 重新调度作业，当前后两个表达式不一样时，重新调度作业
+     *
+     * 内部委托给{@link Scheduler#rescheduleJob(TriggerKey, Trigger)}方法执行
      * 
      * @param cron CRON表达式
      */

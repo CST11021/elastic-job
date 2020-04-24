@@ -27,15 +27,13 @@ import com.dangdang.ddframe.job.lite.internal.storage.JobNodePath;
  */
 public final class InstanceNode {
     
-    /**
-     * 运行实例信息根节点.
-     */
+    /** 运行实例信息根节点. */
     public static final String ROOT = "instances";
-    
+    /** instances/%s */
     private static final String INSTANCES = ROOT + "/%s";
-    
+    /** 作业名称 */
     private final String jobName;
-    
+    /** 用于获取zk上作业节点的路径类 */
     private final JobNodePath jobNodePath;
     
     public InstanceNode(final String jobName) {
@@ -61,11 +59,22 @@ public final class InstanceNode {
     public boolean isInstancePath(final String path) {
         return path.startsWith(jobNodePath.getFullPath(InstanceNode.ROOT));
     }
-    
+
+    /**
+     * 判断 path 是否对应该InstanceNode实例，zk保存的路径如： ${namaSpace}/${jobName}/instances/172.16.120.135@-@97708
+     *
+     * @param path
+     * @return
+     */
     boolean isLocalInstancePath(final String path) {
         return path.equals(jobNodePath.getFullPath(String.format(INSTANCES, JobRegistry.getInstance().getJobInstance(jobName).getJobInstanceId())));
     }
-    
+
+    /**
+     * 返回例如：instances/172.16.120.135@-@97544
+     *
+     * @return
+     */
     String getLocalInstanceNode() {
         return String.format(INSTANCES, JobRegistry.getInstance().getJobInstance(jobName).getJobInstanceId());
     }
