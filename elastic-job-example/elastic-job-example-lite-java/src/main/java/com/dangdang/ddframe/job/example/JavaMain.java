@@ -116,11 +116,11 @@ public final class JavaMain {
         // 一、创建一个作业任务
 
         // 1、配置一个作业任务
-        JobCoreConfiguration coreConfig = JobCoreConfiguration.newBuilder("javaSimpleJob", "0/5 * * * * ?", 3).shardingItemParameters("0=Beijing,1=Shanghai,2=Guangzhou").build();
+        JobCoreConfiguration coreConfig = JobCoreConfiguration.newBuilder("javaSimpleJob", "0/1 * * * * ?", 3).shardingItemParameters("0=Beijing,1=Shanghai,2=Guangzhou").build();
         // 2、创建一个简单类型的作业任务
         SimpleJobConfiguration simpleJobConfig = new SimpleJobConfiguration(coreConfig, JavaSimpleJob.class.getCanonicalName());
         // 3、作业额外的一些配置，比如：分片策略、是否禁用等
-        LiteJobConfiguration liteJobConfiguration = LiteJobConfiguration.newBuilder(simpleJobConfig).disabled(true).overwrite(true).build();
+        LiteJobConfiguration liteJobConfiguration = LiteJobConfiguration.newBuilder(simpleJobConfig).overwrite(true).build();
 
         // 二、启动作业调度器
         JobScheduler jobScheduler = new JobScheduler(regCenter, liteJobConfiguration, jobEventConfig);

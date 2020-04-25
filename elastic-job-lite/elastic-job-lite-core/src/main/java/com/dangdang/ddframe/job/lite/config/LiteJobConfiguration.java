@@ -50,7 +50,7 @@ public final class LiteJobConfiguration implements JobRootConfiguration {
     private final int reconcileIntervalMinutes;
     /** 作业是否禁止启动，可用于部署作业时，先禁止启动，部署结束后统一启动，默认false */
     private final boolean disabled;
-    /** 本地配置是否可覆盖注册中心配置，如果可覆盖，每次启动作业都以本地配置为准，默认false */
+    /** 本地配置是否可覆盖注册中心配置，如果可覆盖，每次启动作业都以本地配置为准，默认false，例如：如果为false，则作业配置以第一次服务启动为准，后续更改不会更新zk上的作业配置 */
     private final boolean overwrite;
     
     /**
