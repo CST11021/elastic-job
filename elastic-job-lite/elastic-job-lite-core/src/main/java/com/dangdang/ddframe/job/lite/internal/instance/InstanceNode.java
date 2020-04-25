@@ -51,7 +51,7 @@ public final class InstanceNode {
     }
     
     /**
-     * 判断给定路径是否为作业运行实例路径.
+     * 判断给定路径是否是/instances节点下面的
      *
      * @param path 待判断的路径
      * @return 是否为作业运行实例路径

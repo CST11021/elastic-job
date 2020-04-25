@@ -57,7 +57,7 @@ public final class ServerNode {
     /**
      * 判断给定路径是否为本地作业服务器路径：判断path是否为该job实例的ip
      *
-     * @param path 待判断的路径
+     * @param path 待判断的路径，例如：${appName}/${jobName}//servers/${ip}
      * @return 是否为本地作业服务器路径
      */
     public boolean isLocalServerPath(final String path) {

@@ -38,7 +38,7 @@ public final class RegistryCenterConnectionStateListener implements ConnectionSt
     }
 
     /**
-     * 当连接丢失的时候：将作业暂停
+     * 监听zk客户端的连接状态，当连接丢失的时候，将作业暂停
      *
      *
      * @param client
@@ -55,13 +55,20 @@ public final class RegistryCenterConnectionStateListener implements ConnectionSt
         // SUSPENDED:表示连接丢失但是连接尚未超时的时候
         // LOST:表示连接丢失了
         if (ConnectionState.SUSPENDED == newState || ConnectionState.LOST == newState) {
+            // 暂停作业
             jobScheduleController.pauseJob();
         } else if (ConnectionState.RECONNECTED == newState) {
-            // 判断zk上的servers/${ip}节点的ip和入参的ip是否一致
-            boolean flag = serverService.isEnableServer(JobRegistry.getInstance().getJobInstance(jobName).getIp());
-            // 当zk上的servers/${ip}节点的ip和本地实例的IP不一致时，设置节点数据为DISABLED
+
+            // 1、如果servers/${ip}没有启动的话，设置为启动状态：节点数据为""表示启动，节点数据为DISABLED表示未启动
+            // 获取本地IP地址
+            String ip = JobRegistry.getInstance().getJobInstance(jobName).getIp();
+            // 连接重连时，如果根据zk之前的配置，看看是否要启用或禁用作业服务
+            boolean flag = serverService.isEnableServer(ip);
             serverService.persistOnline(flag);
+
+            // 2、将作业实例保存到zk
             instanceService.persistOnline();
+
             executionService.clearRunningInfo(shardingService.getLocalShardingItems());
             jobScheduleController.resumeJob();
         }

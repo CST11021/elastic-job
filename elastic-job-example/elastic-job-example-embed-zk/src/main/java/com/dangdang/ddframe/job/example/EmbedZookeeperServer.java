@@ -59,4 +59,8 @@ public final class EmbedZookeeperServer {
             });
         }
     }
+
+    public static void main(String[] args) {
+        start(4181);
+    }
 }

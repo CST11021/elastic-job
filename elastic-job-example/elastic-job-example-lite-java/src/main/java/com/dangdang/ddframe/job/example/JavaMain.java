@@ -64,7 +64,7 @@ public final class JavaMain {
     
     public static void main(final String[] args) throws IOException {
         // 启动一个zk服务
-        EmbedZookeeperServer.start(EMBED_ZOOKEEPER_PORT);
+        // EmbedZookeeperServer.start(EMBED_ZOOKEEPER_PORT);
 
         // 启动注册中心：连接zk服务
         CoordinatorRegistryCenter regCenter = setUpRegistryCenter();
@@ -120,7 +120,7 @@ public final class JavaMain {
         // 2、创建一个简单类型的作业任务
         SimpleJobConfiguration simpleJobConfig = new SimpleJobConfiguration(coreConfig, JavaSimpleJob.class.getCanonicalName());
         // 3、作业额外的一些配置，比如：分片策略、是否禁用等
-        LiteJobConfiguration liteJobConfiguration = LiteJobConfiguration.newBuilder(simpleJobConfig).build();
+        LiteJobConfiguration liteJobConfiguration = LiteJobConfiguration.newBuilder(simpleJobConfig).disabled(true).overwrite(true).build();
 
         // 二、启动作业调度器
         JobScheduler jobScheduler = new JobScheduler(regCenter, liteJobConfiguration, jobEventConfig);

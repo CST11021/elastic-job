@@ -78,6 +78,7 @@ public final class InstanceService {
         for (String each : jobNodeStorage.getJobNodeChildrenKeys(InstanceNode.ROOT)) {
             // each例如：172.16.121.3@-@1857
             JobInstance jobInstance = new JobInstance(each);
+            // 如果对应IP服务没有被禁用，说明该作业实例是可用的
             if (serverService.isEnableServer(jobInstance.getIp())) {
                 result.add(new JobInstance(each));
             }
@@ -86,7 +87,7 @@ public final class InstanceService {
     }
     
     /**
-     * 判断注册中心是否创建了该作业节点.
+     * 判断注册中心是否创建了该作业实例.
      * 
      * @return 当前作业运行实例的节点是否仍然存在
      */

@@ -63,13 +63,14 @@ public final class ConfigurationService {
     }
     
     /**
-     * 持久化分布式作业配置信息.
+     * 将作业配置保存到zk上
      * 
      * @param liteJobConfig 作业配置
      */
     public void persist(final LiteJobConfiguration liteJobConfig) {
         // 检查zk上的作业类型和当前的作业配置是否冲突（检查作业类型是否一样）
         checkConflictJob(liteJobConfig);
+
         // 如果不存在配置，或者配置可以覆盖的话
         if (!jobNodeStorage.isJobNodeExisted(ConfigurationNode.ROOT) || liteJobConfig.isOverwrite()) {
             jobNodeStorage.replaceJobNode(ConfigurationNode.ROOT, LiteJobConfigurationGsonFactory.toJson(liteJobConfig));

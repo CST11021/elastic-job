@@ -75,7 +75,10 @@ public final class ShardingListenerManager extends AbstractListenerManager {
             }
         }
     }
-    
+
+    /**
+     * 当该作业的作业实例列表发生变化时，也会触发重新分片
+     */
     class ListenServersChangedJobListener extends AbstractJobListener {
         
         @Override
@@ -84,11 +87,24 @@ public final class ShardingListenerManager extends AbstractListenerManager {
                 shardingService.setReshardingFlag();
             }
         }
-        
+
+        /**
+         * 判断给定路径是否是/instances节点下面的，并且该path对应的节点发生了变更
+         *
+         * @param eventType
+         * @param path
+         * @return
+         */
         private boolean isInstanceChange(final Type eventType, final String path) {
             return instanceNode.isInstancePath(path) && Type.NODE_UPDATED != eventType;
         }
-        
+
+        /**
+         * 判断该path是否符合：${jobName}/servers/${ip} 规则
+         *
+         * @param path
+         * @return
+         */
         private boolean isServerChange(final String path) {
             return serverNode.isServerPath(path);
         }

@@ -152,7 +152,7 @@ public final class JobNodeStorage {
     }
     
     /**
-     * 替换作业节点数据.
+     * 替换作业节点数据，通过该接口，将作业配置，保存到/config节点（注意是持久节点）
      * 
      * @param node 作业节点名称
      * @param value 待替换的数据
@@ -181,17 +181,17 @@ public final class JobNodeStorage {
     /**
      * 在主节点执行操作.
      * 
-     * @param latchNode 分布式锁使用的作业节点名称
+     * @param latchNode 分布式锁使用的作业节点名称：leader/election/latch
      * @param callback 执行操作的回调
      */
     public void executeInLeader(final String latchNode, final LeaderExecutionCallback callback) {
+
         try (LeaderLatch latch = new LeaderLatch(getClient(), jobNodePath.getFullPath(latchNode))) {
             latch.start();
             latch.await();
+            // 获取分布式锁，知道获取成功
             callback.execute();
-        //CHECKSTYLE:OFF
         } catch (final Exception ex) {
-        //CHECKSTYLE:ON
             handleException(ex);
         }
     }

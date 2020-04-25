@@ -60,14 +60,14 @@ public final class ElectionListenerManager extends AbstractListenerManager {
     }
 
     /**
-     * Leader节点选举监听
+     * Leader节点选举监听，监听leader/election/instance节点
      */
     class LeaderElectionJobListener extends AbstractJobListener {
 
         /**
          * 节点数据变更时触发，leader/election/instance节点被移除 && servers/${ip}节点的数据不是DISABLED &&
          *
-         * @param path          节点路径
+         * @param path          节点路径：leader/election/instance
          * @param eventType     事件类型
          * @param data
          */
@@ -129,6 +129,8 @@ public final class ElectionListenerManager extends AbstractListenerManager {
     }
 
     /**
+     * 监听：${appName}/${jobName}/servers/${ip}节点
+     *
      * 移除Leader节点监听：leader节点的作业停止了，则移除Leader节点
      */
     class LeaderAbdicationJobListener extends AbstractJobListener {
@@ -144,8 +146,8 @@ public final class ElectionListenerManager extends AbstractListenerManager {
         /**
          * 判断本地作业是否被禁用了
          *
-         * @param path
-         * @param data
+         * @param path  例如：${appName}/${jobName}//servers/${ip}
+         * @param data  ${appName}/${jobName}//servers/${ip}节点的data
          * @return
          */
         private boolean isLocalServerDisabled(final String path, final String data) {

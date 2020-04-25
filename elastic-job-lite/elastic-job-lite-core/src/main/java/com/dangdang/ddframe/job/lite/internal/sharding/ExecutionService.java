@@ -107,6 +107,8 @@ public final class ExecutionService {
         if (null == jobConfig || !jobConfig.isMonitorExecution()) {
             return false;
         }
+
+        // 判断分片节点下是否存在running节点，例如：sharding/0/running，如果存在说明当前还有作业实例在执行该分片任务
         for (int each : items) {
             if (jobNodeStorage.isJobNodeExisted(ShardingNode.getRunningNode(each))) {
                 return true;
@@ -123,7 +125,12 @@ public final class ExecutionService {
     public boolean hasRunningItems() {
         return hasRunningItems(getAllItems());
     }
-    
+
+    /**
+     * 获取所有的分片索引
+     *
+     * @return
+     */
     private List<Integer> getAllItems() {
         int shardingTotalCount = configService.load(true).getTypeConfig().getCoreConfig().getShardingTotalCount();
         List<Integer> result = new ArrayList<>(shardingTotalCount);

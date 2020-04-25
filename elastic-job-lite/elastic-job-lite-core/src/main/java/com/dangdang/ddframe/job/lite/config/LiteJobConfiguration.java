@@ -96,7 +96,7 @@ public final class LiteJobConfiguration implements JobRootConfiguration {
         private String jobShardingStrategyClass = "";
         /** 设置作业是否启动时禁止 */
         private boolean disabled;
-        /** 设置本地配置是否可覆盖注册中心配置 */
+        /** 设置本地配置是否可覆盖注册中心配置，默认为false */
         private boolean overwrite;
         /** 设置修复作业服务器不一致状态服务执行间隔分钟数 */
         private int reconcileIntervalMinutes = 10;

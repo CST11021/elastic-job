@@ -57,7 +57,8 @@ public final class SchedulerFacade {
     private final MonitorService monitorService;
     
     private final ReconcileService reconcileService;
-    
+
+    /** 监听管理器类 */
     private ListenerManager listenerManager;
     
     public SchedulerFacade(final CoordinatorRegistryCenter regCenter, final String jobName) {
@@ -113,11 +114,18 @@ public final class SchedulerFacade {
      * @param enabled 作业是否启用
      */
     public void registerStartUpInfo(final boolean enabled) {
+        // 启动所有的监听器
         listenerManager.startAllListeners();
+
+        // 多个作业实例，竞选主节点
         leaderService.electLeader();
         // enabled = false 时，设置servers/${ip}节点数据为DISABLED
         serverService.persistOnline(enabled);
+
+        // 将作业实例保存到zk
         instanceService.persistOnline();
+
+        // 设置分片标识
         shardingService.setReshardingFlag();
         monitorService.listen();
         if (!reconcileService.isRunning()) {
@@ -129,9 +137,11 @@ public final class SchedulerFacade {
      * 终止作业调度.
      */
     public void shutdownInstance() {
+        // 主节点shutdown时，需要异常zk上主节点标记
         if (leaderService.isLeader()) {
             leaderService.removeLeader();
         }
+
         monitorService.close();
         if (reconcileService.isRunning()) {
             reconcileService.stopAsync();

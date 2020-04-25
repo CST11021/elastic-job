@@ -70,6 +70,13 @@ public final class ShardingNode {
     public ShardingNode(final String jobName) {
         jobNodePath = new JobNodePath(jobName);
     }
+
+    /**
+     * sharding/%s/instance
+     *
+     * @param item  分片索引，从0开始
+     * @return
+     */
     public static String getInstanceNode(final int item) {
         return String.format(INSTANCE, item);
     }

@@ -25,7 +25,8 @@ import com.dangdang.ddframe.job.reg.base.CoordinatorRegistryCenter;
 import java.util.List;
 
 /**
- * 作业服务器服务.
+ * 该类
+ * 作业服务器服务，每个作业都对应一个ServerService实例，用于读写操作 ${appName}/${jobName}对应的servers节点下节点信息
  * 
  * @author zhangliang
  * @author caohao
@@ -33,11 +34,17 @@ import java.util.List;
 public final class ServerService {
     /** 作业名称 */
     private final String jobName;
-    /** 作业节点数据访问类 */
-    private final JobNodeStorage jobNodeStorage;
     /** 用于获取servers下的节点路径 */
     private final ServerNode serverNode;
-    
+    /** 作业节点数据访问类 */
+    private final JobNodeStorage jobNodeStorage;
+
+    /**
+     *
+     *
+     * @param regCenter 注册中心
+     * @param jobName   作业名称
+     */
     public ServerService(final CoordinatorRegistryCenter regCenter, final String jobName) {
         this.jobName = jobName;
         jobNodeStorage = new JobNodeStorage(regCenter, jobName);
@@ -45,7 +52,8 @@ public final class ServerService {
     }
     
     /**
-     * 持久化作业服务器上线信息，
+     * 设置该作业在对应的服务器上是否启动：
+     *
      * 当enabled = true 时：设置servers/${ip}路径的value为空串
      * 当enabled = false 时：设置servers/${ip}路径的value为DISABLED
      *
@@ -61,7 +69,7 @@ public final class ServerService {
     }
     
     /**
-     * 获取是否还有可用的作业服务器.
+     * 获取该作业是否还有可用的作业服务器.
      * 
      * @return 是否还有可用的作业服务器
      */
@@ -76,7 +84,7 @@ public final class ServerService {
     }
     
     /**
-     * 判断作业服务器是否可用.
+     * 判断该作业在对应的服务器上是否可用.
      *
      * 1、判断zk上的servers/${ip}节点的ip和入参的ip是否一致
      * 2、判断zk上instances/下的是否存在该ip
@@ -104,12 +112,17 @@ public final class ServerService {
     }
     
     /**
-     * 判断zk上的servers/${ip}节点的ip和入参的ip是否一致
+     * 该作业在对应的机器上是否开启作业
+     *
+     * 获取zk上servers/${ip}节点的数据：
+     * 如果是""，返回true；
+     * 如果是"DISABLED"，返回false
      *
      * @param ip 作业服务器IP地址
      * @return 服务器是否启用
      */
     public boolean isEnableServer(final String ip) {
-        return !ServerStatus.DISABLED.name().equals(jobNodeStorage.getJobNodeData(serverNode.getServerNode(ip)));
+        String data = jobNodeStorage.getJobNodeData(serverNode.getServerNode(ip));
+        return !ServerStatus.DISABLED.name().equals(data);
     }
 }
