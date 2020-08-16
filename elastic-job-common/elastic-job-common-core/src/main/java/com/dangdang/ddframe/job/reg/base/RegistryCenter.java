@@ -25,12 +25,12 @@ package com.dangdang.ddframe.job.reg.base;
 public interface RegistryCenter {
     
     /**
-     * 初始化注册中心.
+     * 初始化注册中心：创建zk客户端实例，使该实例具有操作zk服务的能力
      */
     void init();
     
     /**
-     * 关闭注册中心.
+     * 关闭注册中心：关闭zk客户端实例
      */
     void close();
     

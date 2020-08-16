@@ -29,15 +29,20 @@ import com.dangdang.ddframe.job.lite.internal.storage.JobNodePath;
 public final class FailoverNode {
     
     static final String FAILOVER = "failover";
-    
+
+    /** leader/failover */
     static final String LEADER_ROOT = LeaderNode.ROOT + "/" + FAILOVER;
-    
+
+    /** leader/failover/items */
     static final String ITEMS_ROOT = LEADER_ROOT + "/items";
-    
+
+    /** leader/failover/items/%s */
     static final String ITEMS = ITEMS_ROOT + "/%s";
-    
+
+    /** leader/failover/latch */
     static final String LATCH = LEADER_ROOT + "/latch";
-    
+
+    /** sharding/%s/failover */
     private static final String EXECUTION_FAILOVER = ShardingNode.ROOT + "/%s/" + FAILOVER;
     
     private final JobNodePath jobNodePath;
@@ -45,11 +50,23 @@ public final class FailoverNode {
     public FailoverNode(final String jobName) {
         jobNodePath = new JobNodePath(jobName);
     }
-    
+
+    /**
+     * 返回：leader/failover/items/${item}
+     *
+     * @param item
+     * @return
+     */
     static String getItemsNode(final int item) {
         return String.format(ITEMS, item);
     }
-    
+
+    /**
+     * 返回：sharding/${item}/failover
+     *
+     * @param item
+     * @return
+     */
     static String getExecutionFailoverNode(final int item) {
         return String.format(EXECUTION_FAILOVER, item);
     }

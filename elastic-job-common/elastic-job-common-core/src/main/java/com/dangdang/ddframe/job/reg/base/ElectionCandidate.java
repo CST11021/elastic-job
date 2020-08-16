@@ -27,13 +27,13 @@ public interface ElectionCandidate {
     
     /**
      * 开始领导状态.
+     *
      * @throws Exception 抛出的异常
      */
     void startLeadership() throws Exception;
     
     /**
-     * 终止领导状态.
-     * 实现该方法时不应该抛出任何异常
+     * 终止领导状态，实现该方法时不应该抛出任何异常
      */
     void stopLeadership();
 }

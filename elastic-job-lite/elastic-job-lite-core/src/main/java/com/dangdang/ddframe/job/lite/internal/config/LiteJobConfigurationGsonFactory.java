@@ -70,7 +70,7 @@ public final class LiteJobConfigurationGsonFactory {
     }
     
     /**
-     * 将JSON字符串转换为作业配置.
+     * 将JSON字符串转换为 LiteJobConfiguration 作业配置类对象
      *
      * @param liteJobConfigJson 作业配置JSON字符串
      * @return 作业配置对象

@@ -37,7 +37,8 @@ public abstract class AbstractDistributeOnceElasticJobListener implements Elasti
     private final long completedTimeoutMilliseconds;
     
     private final Object completedWait = new Object();
-    
+
+    /** 保证分布式任务全部开始和结束状态的服务，通过将分布式任务中的分片项的任务执行状态注册到zk来判断任务是否开始和结束 */
     @Setter
     private GuaranteeService guaranteeService;
     
@@ -58,12 +59,18 @@ public abstract class AbstractDistributeOnceElasticJobListener implements Elasti
     
     @Override
     public final void beforeJobExecuted(final ShardingContexts shardingContexts) {
+
+        // 将所有分片项注册到zk上，即创建 /${jobName}/guarantee/started/${shardingItem} 节点
         guaranteeService.registerStart(shardingContexts.getShardingItemParameters().keySet());
+
+        // 如果所有任务都已经开始执行，则删除所有任务启动信息（即移除zk上的 /${jobName}/guarantee/started 节点）
         if (guaranteeService.isAllStarted()) {
             doBeforeJobExecutedAtLastStarted(shardingContexts);
             guaranteeService.clearAllStartedInfo();
             return;
         }
+
+        // 线程阻塞等待一段时间
         long before = timeService.getCurrentMillis();
         try {
             synchronized (startedWait) {
@@ -72,6 +79,7 @@ public abstract class AbstractDistributeOnceElasticJobListener implements Elasti
         } catch (final InterruptedException ex) {
             Thread.interrupted();
         }
+
         if (timeService.getCurrentMillis() - before >= startedTimeoutMilliseconds) {
             guaranteeService.clearAllStartedInfo();
             handleTimeout(startedTimeoutMilliseconds);

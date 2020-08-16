@@ -48,15 +48,20 @@ import java.util.List;
  */
 @Slf4j
 public final class LiteJobFacade implements JobFacade {
-    
+
+    /** 用于从注册中心读取 LiteJobConfiguration 配置，和注册作业配置到注册中心 */
     private final ConfigurationService configService;
-    
+
+    /** 分配相关的服务 */
     private final ShardingService shardingService;
-    
+
+    /** 作业运行时上下文服务，用于获取运行时的分片上下文 */
     private final ExecutionContextService executionContextService;
-    
+
+    /** 作业状态的服务：用于查看和设置zk上的作业运行状态 */
     private final ExecutionService executionService;
-    
+
+    /**  */
     private final FailoverService failoverService;
     
     private final List<ElasticJobListener> elasticJobListeners;
@@ -72,10 +77,45 @@ public final class LiteJobFacade implements JobFacade {
         this.elasticJobListeners = elasticJobListeners;
         this.jobEventBus = jobEventBus;
     }
-    
+
+    /**
+     * 读取作业配置.
+     *
+     * @param fromCache 是否从缓存中读取
+     * @return 作业配置
+     */
     @Override
     public LiteJobConfiguration loadJobRootConfiguration(final boolean fromCache) {
         return configService.load(fromCache);
+    }
+
+    /**
+     * 获取当前作业服务器的分片上下文.
+     *
+     * @return 分片上下文
+     */
+    @Override
+    public ShardingContexts getShardingContexts() {
+        // 如果开启了任务执行失效转移，则判断是否存在执行失败的分片，如果存在，则从作业运行时上下文服务获取分片上下文
+        boolean isFailover = configService.load(true).isFailover();
+        if (isFailover) {
+            List<Integer> failoverShardingItems = failoverService.getLocalFailoverItems();
+            if (!failoverShardingItems.isEmpty()) {
+                return executionContextService.getJobShardingContext(failoverShardingItems);
+            }
+        }
+
+        // 如果需要分片，并且当前节点为主节点, 则作业分片, 如果当前无可用节点则不分片.
+        shardingService.shardingIfNecessary();
+        // 获取运行在本作业实例的分片项集合
+        List<Integer> shardingItems = shardingService.getLocalShardingItems();
+        if (isFailover) {
+            shardingItems.removeAll(failoverService.getLocalTakeOffItems());
+        }
+        // 移除所有被禁用的分片项
+        shardingItems.removeAll(executionService.getDisabledItems(shardingItems));
+        // 从作业运行时上下文服务获取分片上下文
+        return executionContextService.getJobShardingContext(shardingItems);
     }
 
     /**
@@ -106,24 +146,6 @@ public final class LiteJobFacade implements JobFacade {
         if (configService.load(true).isFailover()) {
             failoverService.updateFailoverComplete(shardingContexts.getShardingItemParameters().keySet());
         }
-    }
-    
-    @Override
-    public ShardingContexts getShardingContexts() {
-        boolean isFailover = configService.load(true).isFailover();
-        if (isFailover) {
-            List<Integer> failoverShardingItems = failoverService.getLocalFailoverItems();
-            if (!failoverShardingItems.isEmpty()) {
-                return executionContextService.getJobShardingContext(failoverShardingItems);
-            }
-        }
-        shardingService.shardingIfNecessary();
-        List<Integer> shardingItems = shardingService.getLocalShardingItems();
-        if (isFailover) {
-            shardingItems.removeAll(failoverService.getLocalTakeOffItems());
-        }
-        shardingItems.removeAll(executionService.getDisabledItems(shardingItems));
-        return executionContextService.getJobShardingContext(shardingItems);
     }
     
     @Override

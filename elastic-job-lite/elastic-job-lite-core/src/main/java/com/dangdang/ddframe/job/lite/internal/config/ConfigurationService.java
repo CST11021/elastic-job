@@ -26,7 +26,7 @@ import com.dangdang.ddframe.job.util.env.TimeService;
 import com.google.common.base.Optional;
 
 /**
- * 弹性化分布式作业配置服务.
+ * 用于从注册中心读取 LiteJobConfiguration 配置，和注册作业配置到注册中心（为什么不直接使用JobNodeStorage，因为这里加了一层缓存）
  * 
  * @author zhangliang
  * @author caohao
@@ -44,7 +44,7 @@ public final class ConfigurationService {
     }
     
     /**
-     * 读取作业配置.
+     * 从注册中心读取作业配置.
      * 
      * @param fromCache 是否从缓存中读取
      * @return 作业配置

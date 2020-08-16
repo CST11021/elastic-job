@@ -24,7 +24,7 @@ import com.dangdang.ddframe.job.reg.base.CoordinatorRegistryCenter;
 import java.util.Collection;
 
 /**
- * 保证分布式任务全部开始和结束状态的服务.
+ * 保证分布式任务全部开始和结束状态的服务，通过将分布式任务中的分片项的任务执行状态注册到zk来判断任务是否开始和结束
  * 
  * @author zhangliang
  */
@@ -32,7 +32,8 @@ public final class GuaranteeService {
 
     /** 用于操作zk上的作业节点数据 */
     private final JobNodeStorage jobNodeStorage;
-    
+
+    /** 用于从注册中心读取 LiteJobConfiguration 配置，和注册作业配置到注册中心 */
     private final ConfigurationService configService;
     
     public GuaranteeService(final CoordinatorRegistryCenter regCenter, final String jobName) {
@@ -47,6 +48,7 @@ public final class GuaranteeService {
      */
     public void registerStart(final Collection<Integer> shardingItems) {
         for (int each : shardingItems) {
+            // 创建 /${jobName}/guarantee/started/${each} 节点
             jobNodeStorage.createJobNodeIfNeeded(GuaranteeNode.getStartedNode(each));
         }
     }
@@ -57,6 +59,7 @@ public final class GuaranteeService {
      * @return 是否所有的任务均启动完毕
      */
     public boolean isAllStarted() {
+        // 判断 /${jobName}/guarantee/started 的子节点个数是否等于作业配置的分片数，如果相等，说明所有的任务均启动完毕
         return jobNodeStorage.isJobNodeExisted(GuaranteeNode.STARTED_ROOT)
                 && configService.load(false).getTypeConfig().getCoreConfig().getShardingTotalCount() == jobNodeStorage.getJobNodeChildrenKeys(GuaranteeNode.STARTED_ROOT).size();
     }
@@ -65,6 +68,7 @@ public final class GuaranteeService {
      * 清理所有任务启动信息.
      */
     public void clearAllStartedInfo() {
+        // 移除 /${jobName}/guarantee/started 节点
         jobNodeStorage.removeJobNodeIfExisted(GuaranteeNode.STARTED_ROOT);
     }
     
@@ -75,6 +79,7 @@ public final class GuaranteeService {
      */
     public void registerComplete(final Collection<Integer> shardingItems) {
         for (int each : shardingItems) {
+            // 创建 /${jobName}/guarantee/completed/${each} 节点
             jobNodeStorage.createJobNodeIfNeeded(GuaranteeNode.getCompletedNode(each));
         }
     }
@@ -85,6 +90,7 @@ public final class GuaranteeService {
      * @return 是否所有的任务均执行完毕
      */
     public boolean isAllCompleted() {
+        // 判断 /${jobName}/guarantee/completed 的子节点个数是否等于作业配置的分片数，如果相等，说明所有的任务均启动完毕
         return jobNodeStorage.isJobNodeExisted(GuaranteeNode.COMPLETED_ROOT)
                 && configService.load(false).getTypeConfig().getCoreConfig().getShardingTotalCount() <= jobNodeStorage.getJobNodeChildrenKeys(GuaranteeNode.COMPLETED_ROOT).size();
     }
@@ -93,6 +99,7 @@ public final class GuaranteeService {
      * 清理所有任务启动信息.
      */
     public void clearAllCompletedInfo() {
+        // 移除 /${jobName}/guarantee/completed 节点
         jobNodeStorage.removeJobNodeIfExisted(GuaranteeNode.COMPLETED_ROOT);
     }
 }

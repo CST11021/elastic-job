@@ -18,7 +18,7 @@
 package com.dangdang.ddframe.job.api;
 
 /**
- * 弹性化分布式作业标识接口.
+ * 弹性化分布式作业标识接口，所有的Elastic-Job作业类都继承该接口，Elastic-Job的实现分为三大类：DataflowJob、ScriptJob、SimpleJob
  * 
  * @author zhangliang
  */

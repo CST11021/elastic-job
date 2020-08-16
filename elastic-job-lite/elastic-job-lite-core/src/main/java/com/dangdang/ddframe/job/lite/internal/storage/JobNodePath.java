@@ -20,25 +20,19 @@ package com.dangdang.ddframe.job.lite.internal.storage;
 import lombok.RequiredArgsConstructor;
 
 /**
- * 作业节点路径类.
- * 
- * <p>
- * 作业节点是在普通的节点前加上作业名称的前缀.
- * </p>
- * 
+ * 用于返回节点全路径的工具类，每个作业实例对应一个JobNodePath实例，作业节点的全路径是在预先约定的节点路径前加上作业名称
+ *
  * @author zhangliang
  */
 @RequiredArgsConstructor
 public final class JobNodePath {
-    
+
+    // 以下常量是zk上固定节点的名称
+
     private static final String LEADER_HOST_NODE = "leader/election/instance";
-    
     private static final String CONFIG_NODE = "config";
-    
     private static final String SERVERS_NODE = "servers";
-    
     private static final String INSTANCES_NODE = "instances";
-    
     private static final String SHARDING_NODE = "sharding";
 
     /** 作业名称 */
@@ -47,7 +41,7 @@ public final class JobNodePath {
     /**
      * 返回：/${jobName}/${node}
      * 
-     * @param node 节点名称
+     * @param node 节点名
      * @return 节点全路径
      */
     public String getFullPath(final String node) {

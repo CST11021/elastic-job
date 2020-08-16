@@ -104,11 +104,7 @@ public final class ShardingService {
     }
     
     /**
-     * 如果需要分片，并且当前节点为主节点, 则作业分片.
-     * 
-     * <p>
-     * 如果当前无可用节点则不分片.
-     * </p>
+     * 如果需要分片，并且当前节点为主节点, 则作业分片, 如果当前无可用节点则不分片.
      */
     public void shardingIfNecessary() {
 
@@ -151,6 +147,59 @@ public final class ShardingService {
         jobNodeStorage.executeInTransaction(new PersistShardingInfoTransactionExecutionCallback(map));
         log.debug("Job '{}' sharding complete.", jobName);
     }
+
+    /**
+     * 获取作业运行实例的分片项集合，一个作业实例可以分配到多个分片
+     *
+     * @param jobInstanceId 作业运行实例主键
+     * @return 作业运行实例的分片项集合
+     */
+    public List<Integer> getShardingItems(final String jobInstanceId) {
+        JobInstance jobInstance = new JobInstance(jobInstanceId);
+        if (!serverService.isAvailableServer(jobInstance.getIp())) {
+            return Collections.emptyList();
+        }
+
+        List<Integer> result = new LinkedList<>();
+        int shardingTotalCount = configService.load(true).getTypeConfig().getCoreConfig().getShardingTotalCount();
+        for (int i = 0; i < shardingTotalCount; i++) {
+            // sharding/%s/instance
+            String data = jobNodeStorage.getJobNodeData(ShardingNode.getInstanceNode(i));
+            if (jobInstance.getJobInstanceId().equals(data)) {
+                result.add(i);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 获取运行在本作业实例的分片项集合.
+     *
+     * @return 运行在本作业实例的分片项集合
+     */
+    public List<Integer> getLocalShardingItems() {
+        if (JobRegistry.getInstance().isShutdown(jobName) || !serverService.isAvailableServer(JobRegistry.getInstance().getJobInstance(jobName).getIp())) {
+            return Collections.emptyList();
+        }
+
+        return getShardingItems(JobRegistry.getInstance().getJobInstance(jobName).getJobInstanceId());
+    }
+
+    /**
+     * 查询是包含有分片节点的不在线服务器.
+     *
+     * @return 是包含有分片节点的不在线服务器
+     */
+    public boolean hasShardingInfoInOfflineServers() {
+        List<String> onlineInstances = jobNodeStorage.getJobNodeChildrenKeys(InstanceNode.ROOT);
+        int shardingTotalCount = configService.load(true).getTypeConfig().getCoreConfig().getShardingTotalCount();
+        for (int i = 0; i < shardingTotalCount; i++) {
+            if (!onlineInstances.contains(jobNodeStorage.getJobNodeData(ShardingNode.getInstanceNode(i)))) {
+                return true;
+            }
+        }
+        return false;
+    }
     
     private void blockUntilShardingCompleted() {
         while (!leaderService.isLeaderUntilBlock() && (jobNodeStorage.isJobNodeExisted(ShardingNode.NECESSARY) || jobNodeStorage.isJobNodeExisted(ShardingNode.PROCESSING))) {
@@ -189,59 +238,6 @@ public final class ShardingService {
                 jobNodeStorage.removeJobNodeIfExisted(ShardingNode.ROOT + "/" + i);
             }
         }
-    }
-    
-    /**
-     * 获取作业运行实例的分片项集合，一个作业实例可以分配到多个分片
-     *
-     * @param jobInstanceId 作业运行实例主键
-     * @return 作业运行实例的分片项集合
-     */
-    public List<Integer> getShardingItems(final String jobInstanceId) {
-        JobInstance jobInstance = new JobInstance(jobInstanceId);
-        if (!serverService.isAvailableServer(jobInstance.getIp())) {
-            return Collections.emptyList();
-        }
-
-        List<Integer> result = new LinkedList<>();
-        int shardingTotalCount = configService.load(true).getTypeConfig().getCoreConfig().getShardingTotalCount();
-        for (int i = 0; i < shardingTotalCount; i++) {
-            // sharding/%s/instance
-            String data = jobNodeStorage.getJobNodeData(ShardingNode.getInstanceNode(i));
-            if (jobInstance.getJobInstanceId().equals(data)) {
-                result.add(i);
-            }
-        }
-        return result;
-    }
-    
-    /**
-     * 获取运行在本作业实例的分片项集合.
-     * 
-     * @return 运行在本作业实例的分片项集合
-     */
-    public List<Integer> getLocalShardingItems() {
-        if (JobRegistry.getInstance().isShutdown(jobName) || !serverService.isAvailableServer(JobRegistry.getInstance().getJobInstance(jobName).getIp())) {
-            return Collections.emptyList();
-        }
-
-        return getShardingItems(JobRegistry.getInstance().getJobInstance(jobName).getJobInstanceId());
-    }
-    
-    /**
-     * 查询是包含有分片节点的不在线服务器.
-     * 
-     * @return 是包含有分片节点的不在线服务器
-     */
-    public boolean hasShardingInfoInOfflineServers() {
-        List<String> onlineInstances = jobNodeStorage.getJobNodeChildrenKeys(InstanceNode.ROOT);
-        int shardingTotalCount = configService.load(true).getTypeConfig().getCoreConfig().getShardingTotalCount();
-        for (int i = 0; i < shardingTotalCount; i++) {
-            if (!onlineInstances.contains(jobNodeStorage.getJobNodeData(ShardingNode.getInstanceNode(i)))) {
-                return true;
-            }
-        }
-        return false;
     }
 
 

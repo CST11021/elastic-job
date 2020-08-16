@@ -82,7 +82,7 @@ public interface CoordinatorRegistryCenter extends RegistryCenter {
     void addCacheData(String cachePath);
     
     /**
-     * 释放本地缓存.
+     * 删除本地缓存.
      *
      * @param cachePath 需释放缓存的路径
      */

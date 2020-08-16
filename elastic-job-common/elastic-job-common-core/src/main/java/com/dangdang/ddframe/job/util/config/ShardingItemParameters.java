@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 分片序列号个性化参数.
+ * 分片序列号个性化参数，将分片参数的字符串配置解析为对应的Map数据接口，Map<分片项，参数值>
  *
  * @author zhangliang
  */

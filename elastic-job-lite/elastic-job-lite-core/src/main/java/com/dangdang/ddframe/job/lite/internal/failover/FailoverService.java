@@ -38,11 +38,14 @@ import java.util.List;
  */
 @Slf4j
 public final class FailoverService {
-    
+
+    /** 作业名称 */
     private final String jobName;
-    
+
+    /** 用于操作zk上的节点，例如：增删改查等 */
     private final JobNodeStorage jobNodeStorage;
-    
+
+    /** 作业分片服务 */
     private final ShardingService shardingService;
     
     public FailoverService(final CoordinatorRegistryCenter regCenter, final String jobName) {
@@ -74,7 +77,12 @@ public final class FailoverService {
             jobNodeStorage.executeInLeader(FailoverNode.LATCH, new FailoverLeaderExecutionCallback());
         }
     }
-    
+
+    /**
+     * 查看zk上是否存在有需要失效转移的作业
+     *
+     * @return
+     */
     private boolean needFailover() {
         return jobNodeStorage.isJobNodeExisted(FailoverNode.ITEMS_ROOT) && !jobNodeStorage.getJobNodeChildrenKeys(FailoverNode.ITEMS_ROOT).isEmpty()
                 && !JobRegistry.getInstance().isJobRunning(jobName);
@@ -147,21 +155,31 @@ public final class FailoverService {
             jobNodeStorage.removeJobNodeIfExisted(FailoverNode.getExecutionFailoverNode(Integer.parseInt(each)));
         }
     }
-    
+
+    /**
+     * 作业失效转移的回调服务
+     */
     class FailoverLeaderExecutionCallback implements LeaderExecutionCallback {
         
         @Override
         public void execute() {
+            // 如果zk不存在需要失效转移的作业，则结束回调方法
             if (JobRegistry.getInstance().isShutdown(jobName) || !needFailover()) {
                 return;
             }
+
+            // 获取第一个需要转移的分片项
             int crashedItem = Integer.parseInt(jobNodeStorage.getJobNodeChildrenKeys(FailoverNode.ITEMS_ROOT).get(0));
             log.debug("Failover job '{}' begin, crashed item '{}'", jobName, crashedItem);
+
+            // 设置 /${jobName}/sharding/${item}/failover 节点数据为作业实例ID，例如：172.16.120.135@-@97544
             jobNodeStorage.fillEphemeralJobNode(FailoverNode.getExecutionFailoverNode(crashedItem), JobRegistry.getInstance().getJobInstance(jobName).getJobInstanceId());
+            // 移除 /${jobName}/leader/failover/items/${item} 节点
             jobNodeStorage.removeJobNodeIfExisted(FailoverNode.getItemsNode(crashedItem));
             // TODO 不应使用triggerJob, 而是使用executor统一调度
             JobScheduleController jobScheduleController = JobRegistry.getInstance().getJobScheduleController(jobName);
             if (null != jobScheduleController) {
+                // 触发任务
                 jobScheduleController.triggerJob();
             }
         }

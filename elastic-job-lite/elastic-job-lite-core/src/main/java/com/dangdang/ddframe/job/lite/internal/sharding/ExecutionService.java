@@ -29,17 +29,17 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * 执行作业的服务.
+ * 作业状态的服务：用于查看和设置zk上的作业运行状态
  * 
  * @author zhangliang
  * @author caohao
  */
 public final class ExecutionService {
-    
+    /** 作业名称 */
     private final String jobName;
-    
+    /** 用于操作zk上的节点，例如：增删改查等 */
     private final JobNodeStorage jobNodeStorage;
-    
+    /** 用于从注册中心读取 LiteJobConfiguration 配置，和注册作业配置到注册中心 */
     private final ConfigurationService configService;
     
     public ExecutionService(final CoordinatorRegistryCenter regCenter, final String jobName) {
@@ -54,10 +54,16 @@ public final class ExecutionService {
      * @param shardingContexts 分片上下文
      */
     public void registerJobBegin(final ShardingContexts shardingContexts) {
+
+        // 标记本地缓存，作业已经开始
         JobRegistry.getInstance().setJobRunning(jobName, true);
+
+        // 如果作业时间很短，则可以设置不开启监控，则不会注册到zk
         if (!configService.load(true).isMonitorExecution()) {
             return;
         }
+
+        // 注册到zk，例如：/${jobName}/sharding/${shardingItem}/running
         for (int each : shardingContexts.getShardingItemParameters().keySet()) {
             jobNodeStorage.fillEphemeralJobNode(ShardingNode.getRunningNode(each), "");
         }
@@ -69,24 +75,27 @@ public final class ExecutionService {
      * @param shardingContexts 分片上下文
      */
     public void registerJobCompleted(final ShardingContexts shardingContexts) {
+        // 给对应的作业实例设置为非运行状态
         JobRegistry.getInstance().setJobRunning(jobName, false);
         if (!configService.load(true).isMonitorExecution()) {
             return;
         }
+
+        // 从zk上删除那些标记分配项正在执行的标记节点，入：${jobName}/sharding/${shardingItem}/running
         for (int each : shardingContexts.getShardingItemParameters().keySet()) {
             jobNodeStorage.removeJobNodeIfExisted(ShardingNode.getRunningNode(each));
         }
     }
     
     /**
-     * 清除全部分片的运行状态.
+     * 从zk上清除全部分片的运行状态.
      */
     public void clearAllRunningInfo() {
         clearRunningInfo(getAllItems());
     }
     
     /**
-     * 清除分配分片项的运行状态.
+     * 从zk上清除分配分片项的运行状态.
      * 
      * @param items 需要清理的分片项列表
      */

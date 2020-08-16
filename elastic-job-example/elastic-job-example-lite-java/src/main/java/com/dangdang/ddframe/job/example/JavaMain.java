@@ -18,6 +18,7 @@
 package com.dangdang.ddframe.job.example;
 
 import com.dangdang.ddframe.job.config.JobCoreConfiguration;
+import com.dangdang.ddframe.job.config.JobTypeConfiguration;
 import com.dangdang.ddframe.job.config.dataflow.DataflowJobConfiguration;
 import com.dangdang.ddframe.job.config.script.ScriptJobConfiguration;
 import com.dangdang.ddframe.job.config.simple.SimpleJobConfiguration;
@@ -41,6 +42,7 @@ import java.nio.file.attribute.PosixFilePermissions;
 
 public final class JavaMain {
 
+    // zk配置
 
     /** zk端口 */
     private static final int EMBED_ZOOKEEPER_PORT = 4181;
@@ -49,22 +51,21 @@ public final class JavaMain {
     /** 隔离命名空间，对应zk的Chroot */
     private static final String JOB_NAMESPACE = "elastic-job-example-lite-java";
 
-    // switch to MySQL by yourself
-//    private static final String EVENT_RDB_STORAGE_DRIVER = "com.mysql.jdbc.Driver";
-//    private static final String EVENT_RDB_STORAGE_URL = "jdbc:mysql://localhost:3306/elastic_job_log";
+    // h2数据源设置
 
-    
     private static final String EVENT_RDB_STORAGE_DRIVER = "org.h2.Driver";
-    
     private static final String EVENT_RDB_STORAGE_URL = "jdbc:h2:mem:job_event_storage";
-    
     private static final String EVENT_RDB_STORAGE_USERNAME = "sa";
-    
     private static final String EVENT_RDB_STORAGE_PASSWORD = "";
+
+    // switch to MySQL by yourself
+    // private static final String EVENT_RDB_STORAGE_DRIVER = "com.mysql.jdbc.Driver";
+    // private static final String EVENT_RDB_STORAGE_URL = "jdbc:mysql://localhost:3306/elastic_job_log";
+
     
     public static void main(final String[] args) throws IOException {
         // 启动一个zk服务
-        // EmbedZookeeperServer.start(EMBED_ZOOKEEPER_PORT);
+        EmbedZookeeperServer.start(EMBED_ZOOKEEPER_PORT);
 
         // 启动注册中心：连接zk服务
         CoordinatorRegistryCenter regCenter = setUpRegistryCenter();
@@ -116,23 +117,38 @@ public final class JavaMain {
         // 一、创建一个作业任务
 
         // 1、配置一个作业任务
-        JobCoreConfiguration coreConfig = JobCoreConfiguration.newBuilder("javaSimpleJob", "0/1 * * * * ?", 3).shardingItemParameters("0=Beijing,1=Shanghai,2=Guangzhou").build();
+        JobCoreConfiguration coreConfig = JobCoreConfiguration.newBuilder("javaSimpleJob", "0/1 * * * * ?", 3)
+                .shardingItemParameters("0=Beijing,1=Shanghai,2=Guangzhou")
+                .build();
         // 2、创建一个简单类型的作业任务
-        SimpleJobConfiguration simpleJobConfig = new SimpleJobConfiguration(coreConfig, JavaSimpleJob.class.getCanonicalName());
+        JobTypeConfiguration jobTypeConfig = new SimpleJobConfiguration(coreConfig, JavaSimpleJob.class.getCanonicalName());
         // 3、作业额外的一些配置，比如：分片策略、是否禁用等
-        LiteJobConfiguration liteJobConfiguration = LiteJobConfiguration.newBuilder(simpleJobConfig).overwrite(true).build();
+        LiteJobConfiguration liteJobConfiguration = LiteJobConfiguration.newBuilder(jobTypeConfig).overwrite(true).build();
 
         // 二、启动作业调度器
         JobScheduler jobScheduler = new JobScheduler(regCenter, liteJobConfiguration, jobEventConfig);
         jobScheduler.init();
     }
-    
+
+    /**
+     * 启动一个DataflowJob
+     *
+     * @param regCenter
+     * @param jobEventConfig
+     */
     private static void setUpDataflowJob(final CoordinatorRegistryCenter regCenter, final JobEventConfiguration jobEventConfig) {
         JobCoreConfiguration coreConfig = JobCoreConfiguration.newBuilder("javaDataflowElasticJob", "0/5 * * * * ?", 3).shardingItemParameters("0=Beijing,1=Shanghai,2=Guangzhou").build();
         DataflowJobConfiguration dataflowJobConfig = new DataflowJobConfiguration(coreConfig, JavaDataflowJob.class.getCanonicalName(), true);
         new JobScheduler(regCenter, LiteJobConfiguration.newBuilder(dataflowJobConfig).build(), jobEventConfig).init();
     }
-    
+
+    /**
+     * 启动一个ScriptJob
+     *
+     * @param regCenter
+     * @param jobEventConfig
+     * @throws IOException
+     */
     private static void setUpScriptJob(final CoordinatorRegistryCenter regCenter, final JobEventConfiguration jobEventConfig) throws IOException {
         JobCoreConfiguration coreConfig = JobCoreConfiguration.newBuilder("scriptElasticJob", "0/5 * * * * ?", 3).build();
         ScriptJobConfiguration scriptJobConfig = new ScriptJobConfiguration(coreConfig, buildScriptCommandLine());

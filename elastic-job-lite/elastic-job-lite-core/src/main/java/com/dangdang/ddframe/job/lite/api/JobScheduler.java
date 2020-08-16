@@ -72,14 +72,8 @@ public class JobScheduler {
     private final JobFacade jobFacade;
 
 
-
-    public JobScheduler(final CoordinatorRegistryCenter regCenter, final LiteJobConfiguration liteJobConfig, final ElasticJobListener... elasticJobListeners) {
-        this(regCenter, liteJobConfig, new JobEventBus(), elasticJobListeners);
-    }
-    public JobScheduler(final CoordinatorRegistryCenter regCenter, final LiteJobConfiguration liteJobConfig, final JobEventConfiguration jobEventConfig, final ElasticJobListener... elasticJobListeners) {
-        this(regCenter, liteJobConfig, new JobEventBus(jobEventConfig), elasticJobListeners);
-    }
     /**
+     * 核心构造器
      *
      * @param regCenter             注册中心
      * @param liteJobConfig         作业类型及核心配置
@@ -87,7 +81,7 @@ public class JobScheduler {
      * @param elasticJobListeners   作业执行的前后置监听器
      */
     private JobScheduler(final CoordinatorRegistryCenter regCenter, final LiteJobConfiguration liteJobConfig, final JobEventBus jobEventBus, final ElasticJobListener... elasticJobListeners) {
-        // 向作业注册表，注册一个作业实例
+        // 向作业注册表（这里使用zk注册中心），注册一个作业实例
         JobRegistry.getInstance().addJobInstance(liteJobConfig.getJobName(), new JobInstance());
 
         this.liteJobConfig = liteJobConfig;
@@ -99,6 +93,13 @@ public class JobScheduler {
         schedulerFacade = new SchedulerFacade(regCenter, liteJobConfig.getJobName(), elasticJobListenerList);
         jobFacade = new LiteJobFacade(regCenter, liteJobConfig.getJobName(), Arrays.asList(elasticJobListeners), jobEventBus);
     }
+    public JobScheduler(final CoordinatorRegistryCenter regCenter, final LiteJobConfiguration liteJobConfig, final ElasticJobListener... elasticJobListeners) {
+        this(regCenter, liteJobConfig, new JobEventBus(), elasticJobListeners);
+    }
+    public JobScheduler(final CoordinatorRegistryCenter regCenter, final LiteJobConfiguration liteJobConfig, final JobEventConfiguration jobEventConfig, final ElasticJobListener... elasticJobListeners) {
+        this(regCenter, liteJobConfig, new JobEventBus(jobEventConfig), elasticJobListeners);
+    }
+
 
 
     
@@ -195,10 +196,11 @@ public class JobScheduler {
     /**
      * 给每个作业监听设置GuaranteeService
      *
-     * @param regCenter
-     * @param elasticJobListeners
+     * @param regCenter             zk客户端
+     * @param elasticJobListeners   任务监听器
      */
     private void setGuaranteeServiceForElasticJobListeners(final CoordinatorRegistryCenter regCenter, final List<ElasticJobListener> elasticJobListeners) {
+        // 保证分布式任务全部开始和结束状态的服务，通过将分布式任务中的分片项的任务执行状态注册到zk来判断任务是否开始和结束
         GuaranteeService guaranteeService = new GuaranteeService(regCenter, liteJobConfig.getJobName());
         for (ElasticJobListener each : elasticJobListeners) {
             if (each instanceof AbstractDistributeOnceElasticJobListener) {

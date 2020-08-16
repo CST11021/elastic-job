@@ -20,7 +20,7 @@ package com.dangdang.ddframe.job.config;
 import com.dangdang.ddframe.job.api.JobType;
 
 /**
- * 作业类型配置.
+ * 作业类型配置
  * 
  * @author caohao
  * @author zhangliang
@@ -35,7 +35,7 @@ public interface JobTypeConfiguration {
     JobType getJobType();
     
     /**
-     * 获取作业实现类名称.
+     * 获取作业实现类的全限定类名
      *
      * @return 作业实现类名称
      */

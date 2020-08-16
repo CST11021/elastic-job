@@ -35,6 +35,7 @@ public class JavaDataflowJob implements DataflowJob<Foo> {
     public List<Foo> fetchData(final ShardingContext shardingContext) {
         System.out.println(String.format("Item: %s | Time: %s | Thread: %s | %s",
                 shardingContext.getShardingItem(), new SimpleDateFormat("HH:mm:ss").format(new Date()), Thread.currentThread().getId(), "DATAFLOW FETCH"));
+        // 每次冲数据库抓取10条待处理的数据
         return fooRepository.findTodoData(shardingContext.getShardingParameter(), 10);
     }
     
@@ -42,6 +43,7 @@ public class JavaDataflowJob implements DataflowJob<Foo> {
     public void processData(final ShardingContext shardingContext, final List<Foo> data) {
         System.out.println(String.format("Item: %s | Time: %s | Thread: %s | %s",
                 shardingContext.getShardingItem(), new SimpleDateFormat("HH:mm:ss").format(new Date()), Thread.currentThread().getId(), "DATAFLOW PROCESS"));
+        // 将数据设置以完成状态
         for (Foo each : data) {
             fooRepository.setCompleted(each.getId());
         }

@@ -365,7 +365,7 @@ public final class ZookeeperRegistryCenter implements CoordinatorRegistryCenter 
     }
 
     /**
-     * 释放本地缓存.
+     * 移除本地缓存.
      *
      * @param cachePath 需释放缓存的路径（对应作业名称）
      */

@@ -28,29 +28,55 @@ import com.google.common.base.Joiner;
 public final class GuaranteeNode {
     
     static final String ROOT = "guarantee";
-    
+
+    /** /guarantee/started */
     static final String STARTED_ROOT = ROOT + "/started";
-    
+    /** /guarantee/completed */
     static final String COMPLETED_ROOT = ROOT + "/completed";
-    
+
+    /** 用于返回节点全路径的工具类，每个作业实例对应一个JobNodePath实例 */
     private final JobNodePath jobNodePath;
     
     GuaranteeNode(final String jobName) {
         jobNodePath = new JobNodePath(jobName);
     }
-    
+
+    /**
+     * 返回/guarantee/started/${shardingItem}
+     *
+     * @param shardingItem  分片项，比如：0、1、2...
+     * @return
+     */
     static String getStartedNode(final int shardingItem) {
         return Joiner.on("/").join(STARTED_ROOT, shardingItem);
     }
-    
+
+    /**
+     * 返回/guarantee/completed/${shardingItem}
+     *
+     * @param shardingItem
+     * @return
+     */
     static String getCompletedNode(final int shardingItem) {
         return Joiner.on("/").join(COMPLETED_ROOT, shardingItem);
     }
-    
+
+    /**
+     * 判断该节点是否等于/${jobName}/guarantee/started
+     *
+     * @param path
+     * @return
+     */
     boolean isStartedRootNode(final String path) {
         return jobNodePath.getFullPath(STARTED_ROOT).equals(path);
     }
-    
+
+    /**
+     * 判断该节点是否等于/${jobName}/guarantee/completed
+     *
+     * @param path
+     * @return
+     */
     boolean isCompletedRootNode(final String path) {
         return jobNodePath.getFullPath(COMPLETED_ROOT).equals(path);
     }

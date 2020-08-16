@@ -44,6 +44,7 @@ public final class JobStatusTraceEvent implements JobEvent {
     private Date creationTime = new Date();
     
     public enum State {
+        /** 作业开始指定，可以理解为线程中是调用start函数 */
         TASK_STAGING,
         TASK_RUNNING,
         TASK_FINISHED,

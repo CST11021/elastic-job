@@ -66,7 +66,8 @@ public final class CloudJobFacade implements JobFacade {
     @Override
     public void registerJobCompleted(final ShardingContexts shardingContexts) {
     }
-    
+
+    @Override
     public ShardingContexts getShardingContexts() {
         return shardingContexts;
     }

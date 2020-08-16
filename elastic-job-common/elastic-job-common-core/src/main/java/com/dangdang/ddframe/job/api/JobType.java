@@ -23,6 +23,8 @@ package com.dangdang.ddframe.job.api;
  * @author caohao
  */
 public enum JobType {
-    
+
+    /** Elastic分为三大类作业类型，分别是：简单作业、数据流作业和脚本作业 */
     SIMPLE, DATAFLOW, SCRIPT
+
 }
