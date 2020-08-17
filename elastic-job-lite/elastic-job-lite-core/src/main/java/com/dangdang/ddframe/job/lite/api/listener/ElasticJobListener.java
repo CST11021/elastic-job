@@ -27,14 +27,14 @@ import com.dangdang.ddframe.job.executor.ShardingContexts;
 public interface ElasticJobListener {
     
     /**
-     * 作业执行前的执行的方法.
+     * 作业执行前的执行的方法：真正开始执行用户自定义的作业逻辑前，会调用该方法
      * 
      * @param shardingContexts 分片上下文
      */
     void beforeJobExecuted(final ShardingContexts shardingContexts);
     
     /**
-     * 作业执行后的执行的方法.
+     * 作业执行后的执行的方法：执行完用户自定义的作业逻辑后，会调用该方法
      *
      * @param shardingContexts 分片上下文
      */

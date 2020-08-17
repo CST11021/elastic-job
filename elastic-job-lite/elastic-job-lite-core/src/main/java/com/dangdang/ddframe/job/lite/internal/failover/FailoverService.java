@@ -64,8 +64,15 @@ public final class FailoverService {
             jobNodeStorage.createJobNodeIfNeeded(FailoverNode.getItemsNode(item));
         }
     }
-    
+
+    /**
+     * 判断指定的分片项是否需要失效转移
+     *
+     * @param item
+     * @return
+     */
     private boolean isFailoverAssigned(final Integer item) {
+        // 判断 /${jobName}/sharding/${item}/failover 节点是否存在
         return jobNodeStorage.isJobNodeExisted(FailoverNode.getExecutionFailoverNode(item));
     }
     
@@ -168,11 +175,11 @@ public final class FailoverService {
                 return;
             }
 
-            // 获取第一个需要转移的分片项
+            // 获取第一个需要转移的分片项，即 /${jobName}/leader/failover/items 下的第一个子节点（即分片项）
             int crashedItem = Integer.parseInt(jobNodeStorage.getJobNodeChildrenKeys(FailoverNode.ITEMS_ROOT).get(0));
             log.debug("Failover job '{}' begin, crashed item '{}'", jobName, crashedItem);
 
-            // 设置 /${jobName}/sharding/${item}/failover 节点数据为作业实例ID，例如：172.16.120.135@-@97544
+            // 设置 /${jobName}/sharding/${item}/failover 的节点数据，一般为作业实例的ID，例如：172.16.120.135@-@97544
             jobNodeStorage.fillEphemeralJobNode(FailoverNode.getExecutionFailoverNode(crashedItem), JobRegistry.getInstance().getJobInstance(jobName).getJobInstanceId());
             // 移除 /${jobName}/leader/failover/items/${item} 节点
             jobNodeStorage.removeJobNodeIfExisted(FailoverNode.getItemsNode(crashedItem));

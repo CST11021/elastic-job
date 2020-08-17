@@ -127,7 +127,10 @@ public final class LiteJobFacade implements JobFacade {
     public void checkJobExecutionEnvironment() throws JobExecutionEnvironmentException {
         configService.checkMaxTimeDiffSecondsTolerable();
     }
-    
+
+    /**
+     * 如果需要失效转移, 则执行作业失效转移.
+     */
     @Override
     public void failoverIfNecessary() {
         if (configService.load(true).isFailover()) {

@@ -37,17 +37,18 @@ import java.util.List;
  * @author zhangliang
  */
 public final class FailoverListenerManager extends AbstractListenerManager {
-    
+
+    /** 作业名称 */
     private final String jobName;
-    
+    /** 用于从注册中心读取 LiteJobConfiguration 配置，和注册作业配置到注册中心 */
     private final ConfigurationService configService;
-    
+    /** 作业分片服务 */
     private final ShardingService shardingService;
-    
+    /** 作业失效转移服务 */
     private final FailoverService failoverService;
-    
+    /** 作业节点的配置类，用于获取zk上的作业配置节点路径 */
     private final ConfigurationNode configNode;
-    
+    /** 运行实例节点路径 */
     private final InstanceNode instanceNode;
     
     public FailoverListenerManager(final CoordinatorRegistryCenter regCenter, final String jobName) {
@@ -70,7 +71,10 @@ public final class FailoverListenerManager extends AbstractListenerManager {
         LiteJobConfiguration jobConfig = configService.load(true);
         return null != jobConfig && jobConfig.isFailover();
     }
-    
+
+    /**
+     * 作业执行失败监听，用于触发作业失效转移功能
+     */
     class JobCrashedJobListener extends AbstractJobListener {
         
         @Override

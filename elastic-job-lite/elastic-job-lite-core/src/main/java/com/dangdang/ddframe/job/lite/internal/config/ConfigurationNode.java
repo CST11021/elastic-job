@@ -20,7 +20,7 @@ package com.dangdang.ddframe.job.lite.internal.config;
 import com.dangdang.ddframe.job.lite.internal.storage.JobNodePath;
 
 /**
- * 作业节点的配置类，可获取zk上的作业配置节点路径
+ * 作业节点的配置类，用于获取zk上的作业配置节点路径
  * 
  * @author zhangliang
  */

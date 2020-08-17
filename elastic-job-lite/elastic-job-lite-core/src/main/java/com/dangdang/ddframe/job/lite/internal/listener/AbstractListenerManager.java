@@ -22,7 +22,16 @@ import com.dangdang.ddframe.job.reg.base.CoordinatorRegistryCenter;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
 
 /**
- * 作业注册中心的监听器管理者的抽象类.
+ * 作业注册中心的监听器管理者的抽象类，Elastic-job中的所有监听器都继承该抽象类，注意，该监听器都基于作业维度的监听器，例如：
+ * ElectionListenerManager：主节点选举监听管理器
+ * FailoverListenerManager：失效转移监听管理器
+ * GuaranteeListenerManager：保证分布式任务全部开始和结束状态监听管理器
+ * MonitorExecutionListenerManager：幂等性监听管理器
+ * RescheduleListenerManager：重调度监听管理器
+ * ShardingListenerManager：分片监听管理器
+ * ShutdownListenerManager：运行实例关闭监听管理器
+ * TriggerListenerManager：作业触发监听管理器
+ *
  * 
  * @author zhangliang
  */
