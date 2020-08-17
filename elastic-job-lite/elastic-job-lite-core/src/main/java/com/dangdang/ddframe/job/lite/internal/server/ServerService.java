@@ -25,7 +25,6 @@ import com.dangdang.ddframe.job.reg.base.CoordinatorRegistryCenter;
 import java.util.List;
 
 /**
- * 该类
  * 作业服务器服务，每个作业都对应一个ServerService实例，用于读写操作 ${appName}/${jobName}对应的servers节点下节点信息
  * 
  * @author zhangliang

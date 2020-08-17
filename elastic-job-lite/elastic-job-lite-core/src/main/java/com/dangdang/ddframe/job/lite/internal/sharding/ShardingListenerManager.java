@@ -33,9 +33,11 @@ import org.apache.curator.framework.recipes.cache.TreeCacheEvent.Type;
  * @author zhangliang
  */
 public final class ShardingListenerManager extends AbstractListenerManager {
-    
+
+    /** 作业名称 */
     private final String jobName;
-    
+
+    /** 作业节点的配置类，用于获取zk上的作业配置节点路径 */
     private final ConfigurationNode configNode;
     
     private final InstanceNode instanceNode;

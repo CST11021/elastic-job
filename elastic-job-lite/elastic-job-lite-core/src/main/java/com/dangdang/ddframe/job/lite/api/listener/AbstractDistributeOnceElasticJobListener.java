@@ -56,7 +56,12 @@ public abstract class AbstractDistributeOnceElasticJobListener implements Elasti
             this.completedTimeoutMilliseconds = completedTimeoutMilliseconds;
         }
     }
-    
+
+    /**
+     * 作业执行前的执行的方法：真正开始执行用户自定义的作业逻辑前，会调用该方法
+     *
+     * @param shardingContexts 分片上下文
+     */
     @Override
     public final void beforeJobExecuted(final ShardingContexts shardingContexts) {
 
@@ -85,7 +90,12 @@ public abstract class AbstractDistributeOnceElasticJobListener implements Elasti
             handleTimeout(startedTimeoutMilliseconds);
         }
     }
-    
+
+    /**
+     * 作业执行后的执行的方法：执行完用户自定义的作业逻辑后，会调用该方法
+     *
+     * @param shardingContexts 分片上下文
+     */
     @Override
     public final void afterJobExecuted(final ShardingContexts shardingContexts) {
         guaranteeService.registerComplete(shardingContexts.getShardingItemParameters().keySet());
