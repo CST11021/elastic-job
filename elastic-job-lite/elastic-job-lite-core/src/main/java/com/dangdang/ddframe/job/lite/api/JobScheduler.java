@@ -122,7 +122,7 @@ public class JobScheduler {
         JobDetail jobDetail = createJobDetail(liteJobConfigFromRegCenter.getTypeConfig().getJobClass());
         JobScheduleController jobScheduleController = new JobScheduleController(scheduler, jobDetail, jobName);
 
-        // 注册JobScheduleController
+        // 注册作业对应的JobScheduleController
         JobRegistry.getInstance().registerJob(jobName, jobScheduleController, regCenter);
 
         // 注册作业启动信息

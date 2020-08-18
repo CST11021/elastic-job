@@ -125,9 +125,11 @@ public final class SchedulerFacade {
         // 将作业实例保存到zk
         instanceService.persistOnline();
 
-        // 设置分片标识
+        // 设置需要分片的标记
         shardingService.setReshardingFlag();
+        // 初始化作业监听服务：从配置中获取监听端口，并开启socket监听，接收来自客户端的请求
         monitorService.listen();
+
         if (!reconcileService.isRunning()) {
             reconcileService.startAsync();
         }
