@@ -148,7 +148,7 @@ public final class ExecutionService {
         }
         return result;
     }
-    
+
     /**
      * 如果当前分片项仍在运行则设置任务被错过执行的标记.
      * 
@@ -164,12 +164,13 @@ public final class ExecutionService {
     }
     
     /**
-     * 设置任务被错过执行的标记.
+     * 如果任务被错过执行，则在zk上做一个标记.
      *
      * @param items 需要设置错过执行的任务分片项
      */
     public void setMisfire(final Collection<Integer> items) {
         for (int each : items) {
+            // ${jobName}/sharding/${each}/misfire
             jobNodeStorage.createJobNodeIfNeeded(ShardingNode.getMisfireNode(each));
         }
     }

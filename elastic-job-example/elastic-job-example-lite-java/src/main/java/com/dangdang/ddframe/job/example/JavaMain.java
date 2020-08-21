@@ -70,7 +70,7 @@ public final class JavaMain {
         // 启动注册中心：连接zk服务
         CoordinatorRegistryCenter regCenter = setUpRegistryCenter();
 
-        // 监听任务执行情况
+        // 作业事件配置：这里使用Rdb事件监听机制，通过配置数据源，将作业事件保存到数据库
         JobEventConfiguration jobEventConfig = new JobEventRdbConfiguration(setUpEventTraceDataSource());
 
         // 启动任务

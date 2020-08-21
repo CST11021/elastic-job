@@ -21,17 +21,18 @@ package com.dangdang.ddframe.job.event;
 import com.dangdang.ddframe.job.event.type.JobExecutionEvent;
 import com.dangdang.ddframe.job.event.type.JobStatusTraceEvent;
 import com.google.common.eventbus.AllowConcurrentEvents;
+import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
 /**
- * 作业事件监听器.
+ * 作业事件监听器：该监听器会被注册到{@link EventBus}，参考：{@link JobEventBus#register()}方法，事件总线通过{@link EventBus#post(Object)}方法来发布事件
  *
  * @author zhangliang
  */
 public interface JobEventListener extends JobEventIdentity {
     
     /**
-     * 作业执行事件监听执行.
+     * 作业执行事件监听执行
      *
      * @param jobExecutionEvent 作业执行事件
      */

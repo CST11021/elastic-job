@@ -37,7 +37,7 @@ public final class JobEventRdbListener extends JobEventRdbIdentity implements Jo
     public JobEventRdbListener(final DataSource dataSource) throws SQLException {
         repository = new JobEventRdbStorage(dataSource);
     }
-    
+
     @Override
     public void listen(final JobExecutionEvent executionEvent) {
         repository.addJobExecutionEvent(executionEvent);

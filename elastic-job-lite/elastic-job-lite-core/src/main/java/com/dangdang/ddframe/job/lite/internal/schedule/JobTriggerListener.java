@@ -39,9 +39,15 @@ public final class JobTriggerListener extends TriggerListenerSupport {
     public String getName() {
         return "JobTriggerListener";
     }
-    
+
+    /**
+     * 当Trigger错过被触发时执行时，会调用该方法，比如当前时间有很多触发器都需要执行，但是线程池中的有效线程都在工作，那么有的触发器就有可能超时，错过这一轮的触发。
+     *
+     * @param trigger
+     */
     @Override
     public void triggerMisfired(final Trigger trigger) {
+        // 如果是第一次执行，则不需要设置错过执行标记
         if (null != trigger.getPreviousFireTime()) {
             executionService.setMisfire(shardingService.getLocalShardingItems());
         }

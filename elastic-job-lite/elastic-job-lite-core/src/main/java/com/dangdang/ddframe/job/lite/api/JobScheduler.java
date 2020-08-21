@@ -112,7 +112,7 @@ public class JobScheduler {
         // 将作业配置保存到zk上的/config节点
         LiteJobConfiguration liteJobConfigFromRegCenter = schedulerFacade.updateJobConfiguration(liteJobConfig);
 
-        // 将作业名和当前分片的总数保存到注册表（本地缓存和zk）
+        // 在本地注册表中记录作业及对应的分片总数
         String jobName = liteJobConfigFromRegCenter.getJobName();
         int shardingTotalCount = liteJobConfigFromRegCenter.getTypeConfig().getCoreConfig().getShardingTotalCount();
         JobRegistry.getInstance().setCurrentShardingTotalCount(jobName, shardingTotalCount);

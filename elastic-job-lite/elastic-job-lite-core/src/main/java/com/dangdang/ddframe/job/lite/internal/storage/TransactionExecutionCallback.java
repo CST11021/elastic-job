@@ -20,7 +20,8 @@ package com.dangdang.ddframe.job.lite.internal.storage;
 import org.apache.curator.framework.api.transaction.CuratorTransactionFinal;
 
 /**
- * 事务执行操作的回调接口.
+ * 事务执行操作的回调接口，其实现有：
+ * PersistShardingInfoTransactionExecutionCallback：保存分片结果的回调
  * 
  * @author zhangliang
  */

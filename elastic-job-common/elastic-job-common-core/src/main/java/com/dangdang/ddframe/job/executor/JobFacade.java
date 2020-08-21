@@ -124,6 +124,9 @@ public interface JobFacade {
      */
     boolean misfireIfRunning(Collection<Integer> shardingItems);
 
+
+
+
     /**
      * 如果需要失效转移, 则执行作业失效转移.
      */

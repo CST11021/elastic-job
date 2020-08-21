@@ -18,7 +18,10 @@
 package com.dangdang.ddframe.job.lite.internal.storage;
 
 /**
- * 主节点执行操作的回调接口.
+ * 主节点执行操作的回调接口，其实现包括：
+ * FailoverLeaderExecutionCallback：作业失效转移的回调服务
+ * LeaderElectionExecutionCallback：通过分布锁，选举主节点
+ *
  * 
  * @author zhangliang
  */

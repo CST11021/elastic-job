@@ -16,6 +16,8 @@
         <module>elastic-job-example-lite-springboot</module>
         
         <module>elastic-job-example-cloud</module>
+
+        <module>quartz-example</module>
     </modules>
     
     <properties>

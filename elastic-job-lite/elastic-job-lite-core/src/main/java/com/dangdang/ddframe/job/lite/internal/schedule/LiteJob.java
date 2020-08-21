@@ -10,7 +10,7 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 /**
- * Lite调度作业.
+ * Lite调度作业，基于quartz框架实现，这里实现了org.quartz.Job接口
  *
  * @author zhangliang
  */

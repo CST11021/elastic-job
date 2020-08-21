@@ -40,7 +40,13 @@ public final class JobEventRdbConfiguration extends JobEventRdbIdentity implemen
 
     /** 数据库数据源 */
     private final transient DataSource dataSource;
-    
+
+    /**
+     * 创建一个Rdb监听器，这里监听
+     *
+     * @return
+     * @throws JobEventListenerConfigurationException
+     */
     @Override
     public JobEventListener createJobEventListener() throws JobEventListenerConfigurationException {
         try {

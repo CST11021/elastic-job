@@ -240,7 +240,9 @@ public final class ShardingService {
         }
     }
 
-
+    /**
+     * 保存分片结果的回调
+     */
     @RequiredArgsConstructor
     class PersistShardingInfoTransactionExecutionCallback implements TransactionExecutionCallback {
 

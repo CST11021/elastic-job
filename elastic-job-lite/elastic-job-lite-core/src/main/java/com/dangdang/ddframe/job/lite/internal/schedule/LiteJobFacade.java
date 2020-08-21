@@ -155,7 +155,12 @@ public final class LiteJobFacade implements JobFacade {
     public boolean misfireIfRunning(final Collection<Integer> shardingItems) {
         return executionService.misfireIfHasRunningItems(shardingItems);
     }
-    
+
+    /**
+     * 清除任务被错过执行的标记.
+     *
+     * @param shardingItems 需要清除错过执行的任务分片项
+     */
     @Override
     public void clearMisfire(final Collection<Integer> shardingItems) {
         executionService.clearMisfire(shardingItems);
@@ -193,9 +198,15 @@ public final class LiteJobFacade implements JobFacade {
             each.afterJobExecuted(shardingContexts);
         }
     }
-    
+
+    /**
+     * 发布作业执行事件.
+     *
+     * @param jobExecutionEvent 作业执行事件
+     */
     @Override
     public void postJobExecutionEvent(final JobExecutionEvent jobExecutionEvent) {
+        // 向作业事件总线发布作业事件
         jobEventBus.post(jobExecutionEvent);
     }
     
