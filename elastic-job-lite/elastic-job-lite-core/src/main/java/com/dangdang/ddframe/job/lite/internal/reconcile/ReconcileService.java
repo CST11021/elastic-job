@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 调解分布式作业不一致状态服务.
+ * 调解分布式作业不一致状态服务：分片状态标记补偿
  *
  * @author caohao
  */
@@ -56,8 +56,10 @@ public final class ReconcileService extends AbstractScheduledService {
         int reconcileIntervalMinutes = null == config ? -1 : config.getReconcileIntervalMinutes();
         if (reconcileIntervalMinutes > 0 && (System.currentTimeMillis() - lastReconcileTime >= reconcileIntervalMinutes * 60 * 1000)) {
             lastReconcileTime = System.currentTimeMillis();
+            // 当前节点是主节点 && 不需要重新分片 && 存在不在线的服务节点
             if (leaderService.isLeaderUntilBlock() && !shardingService.isNeedSharding() && shardingService.hasShardingInfoInOfflineServers()) {
                 log.warn("Elastic Job: job status node has inconsistent value,start reconciling...");
+                // 设置需要重新分片的标记
                 shardingService.setReshardingFlag();
             }
         }
