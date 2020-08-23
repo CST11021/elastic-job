@@ -180,6 +180,7 @@ public abstract class AbstractElasticJobExecutor {
             if (executorService.isShutdown()) {
                 return;
             }
+            // 每个job对应一个线程池服务，而每个分片对应一个线程
             executorService.submit(new Runnable() {
                 
                 @Override
