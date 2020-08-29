@@ -35,7 +35,8 @@ public final class ElectionListenerManager extends AbstractListenerManager {
 
     /** 作业名称 */
     private final String jobName;
-    
+
+    /** 用于定义${jobName}/leader/下的节点路径 */
     private final LeaderNode leaderNode;
     
     private final ServerNode serverNode;

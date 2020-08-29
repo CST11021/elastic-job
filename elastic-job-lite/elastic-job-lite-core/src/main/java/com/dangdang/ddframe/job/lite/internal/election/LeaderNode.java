@@ -20,7 +20,7 @@ package com.dangdang.ddframe.job.lite.internal.election;
 import com.dangdang.ddframe.job.lite.internal.storage.JobNodePath;
 
 /**
- * 主节点路径.
+ * 用于定义${jobName}/leader/下的节点路径
  * 
  * @author zhangliang
  */
