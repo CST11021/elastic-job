@@ -62,17 +62,26 @@ public final class GlobalConfigurationFilter implements Filter {
     public void doFilter(final ServletRequest servletRequest, final ServletResponse servletResponse, final FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
         HttpSession httpSession = httpRequest.getSession();
+        // 加载注册中心
         if (null == httpSession.getAttribute(REG_CENTER_CONFIG_KEY)) {
             loadActivatedRegCenter(httpSession);
         }
+        // 加载事件追踪数据源
         if (null == httpSession.getAttribute(DATA_SOURCE_CONFIG_KEY)) {
             loadActivatedEventTraceDataSource(httpSession);
         }
         filterChain.doFilter(servletRequest, servletResponse);
     }
-    
+
+    /**
+     * 加载已连接的注册中心配置，并保存到session
+     *
+     * @param httpSession
+     */
     private void loadActivatedRegCenter(final HttpSession httpSession) {
+        // 从 ~/.elastic-job-console/Configurations.xml 读取已连接的注册中心配置
         Optional<RegistryCenterConfiguration> config = regCenterService.loadActivated();
+        // isPresent() ：如果包含（非null）实例，则返回true。
         if (config.isPresent()) {
             String configName = config.get().getName();
             boolean isConnected = setRegistryCenterNameToSession(regCenterService.find(configName, regCenterService.loadAll()), httpSession);
@@ -81,7 +90,14 @@ public final class GlobalConfigurationFilter implements Filter {
             }
         }
     }
-    
+
+    /**
+     * 将注册中心配置保存到session
+     *
+     * @param regCenterConfig
+     * @param session
+     * @return
+     */
     private boolean setRegistryCenterNameToSession(final RegistryCenterConfiguration regCenterConfig, final HttpSession session) {
         session.setAttribute(REG_CENTER_CONFIG_KEY, regCenterConfig);
         try {

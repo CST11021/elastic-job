@@ -37,7 +37,15 @@ public final class JobOperateAPIImpl implements JobOperateAPI {
     public JobOperateAPIImpl(final CoordinatorRegistryCenter regCenter) {
         this.regCenter = regCenter;
     }
-    
+
+    /**
+     * 作业立刻执行.
+     *
+     * 作业在不与上次运行中作业冲突的情况下才会启动, 并在启动后自动清理此标记.
+     *
+     * @param jobName 作业名称
+     * @param serverIp 作业服务器IP地址
+     */
     @Override
     public void trigger(final Optional<String> jobName, final Optional<String> serverIp) {
         if (jobName.isPresent()) {
@@ -90,10 +98,20 @@ public final class JobOperateAPIImpl implements JobOperateAPI {
             regCenter.persist(serverNodePath, "");
         }
     }
-    
+
+    /**
+     * 作业关闭：
+     * 1、如果作业和服务器都不为空：则关闭指定服务器上的作业；
+     * 2、如果服务器为空，则关闭所有的服务器上的作业任务
+     * 3、如果作业为空，则关闭指定服务器上的所有作业任务
+     *
+     * @param jobName 作业名称
+     * @param serverIp 作业服务器IP地址
+     */
     @Override
     public void shutdown(final Optional<String> jobName, final Optional<String> serverIp) {
         Preconditions.checkArgument(jobName.isPresent() || serverIp.isPresent(), "At least indicate jobName or serverIp.");
+        // 如果作业和服务器都不为空：则关闭指定服务器上的作业
         if (jobName.isPresent() && serverIp.isPresent()) {
             JobNodePath jobNodePath = new JobNodePath(jobName.get());
             for (String each : regCenter.getChildrenKeys(jobNodePath.getInstancesNodePath())) {

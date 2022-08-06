@@ -54,6 +54,7 @@ public final class ConsoleBootstrap {
                 log.warn("Wrong port format, using default port 8899 instead.");
             }
         }
+
         RestfulServer restfulServer = new RestfulServer(port);
         restfulServer.addFilter(GlobalConfigurationFilter.class, "*.html")
                      .addFilter(WwwAuthFilter.class, "/")

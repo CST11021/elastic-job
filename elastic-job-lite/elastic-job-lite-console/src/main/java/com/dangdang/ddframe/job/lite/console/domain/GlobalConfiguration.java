@@ -34,8 +34,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public final class GlobalConfiguration {
-    
+
+    /** 注册中心配置 */
     private RegistryCenterConfigurations registryCenterConfigurations;
-    
+
+    /** 事件追踪数据源配置根对象 */
     private EventTraceDataSourceConfigurations eventTraceDataSourceConfigurations;
 }

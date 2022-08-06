@@ -54,8 +54,8 @@ public final class RestfulServer {
     /**
      * 启动内嵌的RESTful服务器.
      * 
-     * @param packages RESTful实现类所在包
-     * @param resourcePath 资源路径
+     * @param packages      RESTful实现类所在包
+     * @param resourcePath  资源路径
      * @throws Exception 启动服务器异常
      */
     public void start(final String packages, final Optional<String> resourcePath) throws Exception {
@@ -65,9 +65,9 @@ public final class RestfulServer {
     /**
      * 启动内嵌的RESTful服务器.
      *
-     * @param packages RESTful实现类所在包
-     * @param resourcePath 资源路径
-     * @param servletPath servlet路径
+     * @param packages      RESTful实现类所在包
+     * @param resourcePath  资源路径
+     * @param servletPath   servlet路径
      * @throws Exception 启动服务器异常
      */
     public void start(final String packages, final Optional<String> resourcePath, final Optional<String> servletPath) throws Exception {
@@ -95,7 +95,22 @@ public final class RestfulServer {
         servletContextHandler.addFilter(filterClass, urlPattern, EnumSet.of(DispatcherType.REQUEST));
         return this;
     }
-    
+
+    /**
+     * 安静停止内嵌的RESTful服务器.
+     *
+     */
+    public void stop() {
+        log.info("Elastic Job: Stop RESTful server");
+        try {
+            server.stop();
+            // CHECKSTYLE:OFF
+        } catch (final Exception e) {
+            // CHECKSTYLE:ON
+            log.error("Elastic Job: Stop RESTful server error", e);
+        }
+    }
+
     private ServletContextHandler buildServletContextHandler() {
         ServletContextHandler result = new ServletContextHandler(ServletContextHandler.SESSIONS);
         result.setContextPath("/");
@@ -111,19 +126,5 @@ public final class RestfulServer {
         result.setInitParameter("resteasy.use.builtin.providers", Boolean.FALSE.toString());
         return result;
     }
-    
-    /**
-     * 安静停止内嵌的RESTful服务器.
-     * 
-     */
-    public void stop() {
-        log.info("Elastic Job: Stop RESTful server");
-        try {
-            server.stop();
-            // CHECKSTYLE:OFF
-        } catch (final Exception e) {
-            // CHECKSTYLE:ON
-            log.error("Elastic Job: Stop RESTful server error", e);
-        }
-    }
+
 }

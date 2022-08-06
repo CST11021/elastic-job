@@ -33,24 +33,36 @@ import java.io.File;
  * @author zhangliang
  */
 public abstract class AbstractXmlRepositoryImpl<E> implements XmlRepository<E> {
-    
+
+    /** 对应 ~/.elastic-job-console/Configurations.xml 配置文件 */
     private final File file;
-    
+    /** 对应 GlobalConfiguration 配置类 */
     private final Class<E> clazz;
     
     private JAXBContext jaxbContext;
-    
+
+    /**
+     *
+     * @param fileName  配置文件名，例如：Configurations.xml
+     * @param clazz     配置文件对应的配置类
+     */
     protected AbstractXmlRepositoryImpl(final String fileName, final Class<E> clazz) {
         file = new File(HomeFolderUtils.getFilePathInHomeFolder(fileName));
         this.clazz = clazz;
         HomeFolderUtils.createHomeFolderIfNotExisted();
+
         try {
             jaxbContext = JAXBContext.newInstance(clazz);
         } catch (final JAXBException ex) {
             throw new JobConsoleException(ex);
         }
     }
-    
+
+    /**
+     * 加载配置文件Configurations.xml，返回配置对象GlobalConfiguration
+     *
+     * @return
+     */
     @Override
     public synchronized E load() {
         if (!file.exists()) {
@@ -60,6 +72,7 @@ public abstract class AbstractXmlRepositoryImpl<E> implements XmlRepository<E> {
                 throw new JobConsoleException(ex);
             }
         }
+
         try {
             @SuppressWarnings("unchecked")
             E result = (E) jaxbContext.createUnmarshaller().unmarshal(file);
@@ -68,7 +81,12 @@ public abstract class AbstractXmlRepositoryImpl<E> implements XmlRepository<E> {
             throw new JobConsoleException(ex);
         }
     }
-    
+
+    /**
+     * 向配置文件添加配置
+     *
+     * @param entity 数据
+     */
     @Override
     public synchronized void save(final E entity) {
         try {

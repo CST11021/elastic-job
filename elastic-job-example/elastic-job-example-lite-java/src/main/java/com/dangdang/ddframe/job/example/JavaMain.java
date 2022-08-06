@@ -45,7 +45,7 @@ public final class JavaMain {
     // zk配置
 
     /** zk端口 */
-    private static final int EMBED_ZOOKEEPER_PORT = 4181;
+    private static final int EMBED_ZOOKEEPER_PORT = 5181;
     /** zk地址 */
     private static final String ZOOKEEPER_CONNECTION_STRING = "localhost:" + EMBED_ZOOKEEPER_PORT;
     /** 隔离命名空间，对应zk的Chroot */
@@ -65,7 +65,7 @@ public final class JavaMain {
     
     public static void main(final String[] args) throws IOException {
         // 启动一个zk服务
-        EmbedZookeeperServer.start(EMBED_ZOOKEEPER_PORT);
+        // EmbedZookeeperServer.start(EMBED_ZOOKEEPER_PORT);
 
         // 启动注册中心：连接zk服务
         CoordinatorRegistryCenter regCenter = setUpRegistryCenter();
@@ -75,7 +75,6 @@ public final class JavaMain {
 
         // 启动任务
         setUpSimpleJob(regCenter, jobEventConfig);
-
         // setUpDataflowJob(regCenter, jobEventConfig);
         // setUpScriptJob(regCenter, jobEventConfig);
     }

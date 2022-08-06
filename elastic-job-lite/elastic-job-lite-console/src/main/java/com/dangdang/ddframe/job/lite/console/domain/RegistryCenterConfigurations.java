@@ -27,6 +27,12 @@ import java.util.Set;
 
 /**
  * 注册中心配置根对象.
+ * 对应~/.elastic-job-console/Configurations.xml配置文件注册中心配置节点
+ * <globalConfiguration>
+ *     <registryCenterConfigurations>
+ *         ...
+ *     </registryCenterConfigurations>
+ * </globalConfiguration>
  *
  * @author zhangliang
  */

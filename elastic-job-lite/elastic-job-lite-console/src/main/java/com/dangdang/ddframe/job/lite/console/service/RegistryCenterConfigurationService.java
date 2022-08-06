@@ -24,6 +24,8 @@ import com.google.common.base.Optional;
 /**
  * 注册中心配置服务.
  *
+ * RegistryCenterConfigurationServiceImpl实现将所有相关配置保存在本地的 ~/.elastic-job-console/Configurations.xml 文件
+ *
  * @author zhangliang
  */
 public interface RegistryCenterConfigurationService {
@@ -36,7 +38,7 @@ public interface RegistryCenterConfigurationService {
     RegistryCenterConfigurations loadAll();
     
     /**
-     * 读取注册中心配置.
+     * 根据注册注册中心配置名，读取相应的配置.
      *
      * @param name 配置名称
      * @return 注册中心配置
@@ -53,7 +55,7 @@ public interface RegistryCenterConfigurationService {
     RegistryCenterConfiguration find(final String name, final RegistryCenterConfigurations configs);
     
     /**
-     * 读取已连接的注册中心配置.
+     * 读取已连接的注册中心配置
      *
      * @return 已连接的注册中心配置
      */

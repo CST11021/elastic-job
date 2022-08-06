@@ -34,13 +34,23 @@ public class SpringSimpleJob implements SimpleJob {
     
     @Override
     public void execute(final ShardingContext shardingContext) {
+        System.out.println("SIMPLE开始");
         System.out.println(String.format("Item: %s | Time: %s | Thread: %s | %s",
-                shardingContext.getShardingItem(), new SimpleDateFormat("HH:mm:ss").format(new Date()), Thread.currentThread().getId(), "SIMPLE"));
+                shardingContext.getShardingItem(),
+                new SimpleDateFormat("HH:mm:ss").format(new Date()),
+                Thread.currentThread().getId(), "SIMPLE"));
+
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         // 从资源库查找数据，并将数据设置为处理完成
         List<Foo> data = fooRepository.findTodoData(shardingContext.getShardingParameter(), 10);
         for (Foo each : data) {
             fooRepository.setCompleted(each.getId());
         }
+        System.out.println("SIMPLE结束");
     }
 }

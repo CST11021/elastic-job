@@ -27,12 +27,7 @@ import com.google.common.base.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.Collection;
@@ -48,7 +43,31 @@ public final class RegistryCenterRestfulApi {
     public static final String REG_CENTER_CONFIG_KEY = "reg_center_config_key";
     
     private RegistryCenterConfigurationService regCenterService = new RegistryCenterConfigurationServiceImpl();
-    
+
+    /**
+     * 添加注册中心.
+     *
+     * @param config 注册中心配置
+     * @return 是否添加成功
+     */
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public boolean add(final RegistryCenterConfiguration config) {
+        return regCenterService.add(config);
+    }
+
+    @POST
+    @Path("/connect")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public boolean connect(final RegistryCenterConfiguration config, final @Context HttpServletRequest request) {
+        boolean isConnected = setRegistryCenterNameToSession(regCenterService.find(config.getName(), regCenterService.loadAll()), request.getSession());
+        if (isConnected) {
+            regCenterService.load(config.getName());
+        }
+        return isConnected;
+    }
+
     /**
      * 判断是否存在已连接的注册中心配置.
      *
@@ -76,19 +95,7 @@ public final class RegistryCenterRestfulApi {
         }
         return regCenterService.loadAll().getRegistryCenterConfiguration();
     }
-    
-    /**
-     * 添加注册中心.
-     * 
-     * @param config 注册中心配置
-     * @return 是否添加成功
-     */
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    public boolean add(final RegistryCenterConfiguration config) {
-        return regCenterService.add(config);
-    }
-    
+
     /**
      * 删除注册中心.
      *
@@ -99,23 +106,23 @@ public final class RegistryCenterRestfulApi {
     public void delete(final RegistryCenterConfiguration config) {
         regCenterService.delete(config.getName());
     }
-    
-    @POST
-    @Path("/connect")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public boolean connect(final RegistryCenterConfiguration config, final @Context HttpServletRequest request) {
-        boolean isConnected = setRegistryCenterNameToSession(regCenterService.find(config.getName(), regCenterService.loadAll()), request.getSession());
-        if (isConnected) {
-            regCenterService.load(config.getName());
-        }
-        return isConnected;
-    }
-    
+
+    /**
+     * 将注册中心配置保存到Session
+     *
+     * @param regCenterConfig
+     * @param session
+     * @return
+     */
     private boolean setRegistryCenterNameToSession(final RegistryCenterConfiguration regCenterConfig, final HttpSession session) {
         session.setAttribute(REG_CENTER_CONFIG_KEY, regCenterConfig);
         try {
-            RegistryCenterFactory.createCoordinatorRegistryCenter(regCenterConfig.getZkAddressList(), regCenterConfig.getNamespace(), Optional.fromNullable(regCenterConfig.getDigest()));
+            RegistryCenterFactory.createCoordinatorRegistryCenter(
+                    regCenterConfig.getZkAddressList(),
+                    regCenterConfig.getNamespace(),
+                    Optional.fromNullable(regCenterConfig.getDigest())
+            );
+
             SessionRegistryCenterConfiguration.setRegistryCenterConfiguration((RegistryCenterConfiguration) session.getAttribute(REG_CENTER_CONFIG_KEY));
         } catch (final RegException ex) {
             return false;

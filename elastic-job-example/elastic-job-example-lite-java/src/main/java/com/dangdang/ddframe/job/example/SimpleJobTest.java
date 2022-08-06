@@ -5,7 +5,6 @@ import com.dangdang.ddframe.job.api.simple.SimpleJob;
 import com.dangdang.ddframe.job.config.JobCoreConfiguration;
 import com.dangdang.ddframe.job.config.JobTypeConfiguration;
 import com.dangdang.ddframe.job.config.simple.SimpleJobConfiguration;
-import com.dangdang.ddframe.job.example.fixture.entity.Foo;
 import com.dangdang.ddframe.job.lite.api.JobScheduler;
 import com.dangdang.ddframe.job.lite.config.LiteJobConfiguration;
 import com.dangdang.ddframe.job.reg.base.CoordinatorRegistryCenter;
@@ -23,10 +22,10 @@ public class SimpleJobTest implements SimpleJob {
 
     public static void main(String[] args) {
         // 启动一个zk服务
-        EmbedZookeeperServer.start(4181);
+        // EmbedZookeeperServer.start(4181);
 
         // 启动注册中心客户端
-        ZookeeperConfiguration zkConfig = new ZookeeperConfiguration("localhost:4181", "simpleJobTest");
+        ZookeeperConfiguration zkConfig = new ZookeeperConfiguration("localhost:5181", "simpleJobTest");
         CoordinatorRegistryCenter regCenter = new ZookeeperRegistryCenter(zkConfig);
         regCenter.init();
 

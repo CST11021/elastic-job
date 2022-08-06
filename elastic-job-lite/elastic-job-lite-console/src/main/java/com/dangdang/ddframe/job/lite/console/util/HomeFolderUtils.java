@@ -47,7 +47,7 @@ public final class HomeFolderUtils {
     }
     
     /**
-     * 创建用户目录.
+     * 创建用户目录.~/.elastic-job-console
      */
     public static void createHomeFolderIfNotExisted() {
         File file = new File(getHomeFolder());
@@ -55,8 +55,14 @@ public final class HomeFolderUtils {
             file.mkdirs();
         }
     }
-    
+
+    /**
+     * 获取用户目录下的.elastic-job-console文件夹, 例如: ~/.elastic-job-console
+     *
+     * @return
+     */
     private static String getHomeFolder() {
         return String.format("%s%s%s%s", USER_HOME, FILE_SEPARATOR, CONSOLE_ROOT_FOLDER, FILE_SEPARATOR);
     }
+
 }

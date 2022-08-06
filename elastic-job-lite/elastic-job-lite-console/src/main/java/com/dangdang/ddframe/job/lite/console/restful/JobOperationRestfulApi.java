@@ -42,7 +42,57 @@ import java.util.Collection;
 public final class JobOperationRestfulApi {
     
     private JobAPIService jobAPIService = new JobAPIServiceImpl();
-    
+
+    /**
+     * 触发作业.
+     *
+     * @param jobName 作业名称
+     */
+    @POST
+    @Path("/{jobName}/trigger")
+    public void triggerJob(@PathParam("jobName") final String jobName) {
+        jobAPIService.getJobOperatorAPI().trigger(Optional.of(jobName), Optional.<String>absent());
+    }
+
+    /**
+     * 禁用作业.
+     *
+     * @param jobName 作业名称
+     */
+    @POST
+    @Path("/{jobName}/disable")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void disableJob(@PathParam("jobName") final String jobName) {
+        jobAPIService.getJobOperatorAPI().disable(Optional.of(jobName), Optional.<String>absent());
+    }
+
+    /**
+     * 启用作业.
+     *
+     * @param jobName 作业名称
+     */
+    @DELETE
+    @Path("/{jobName}/disable")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void enableJob(@PathParam("jobName") final String jobName) {
+        jobAPIService.getJobOperatorAPI().enable(Optional.of(jobName), Optional.<String>absent());
+    }
+
+    /**
+     * 终止作业.
+     *
+     * @param jobName 作业名称
+     */
+    @POST
+    @Path("/{jobName}/shutdown")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void shutdownJob(@PathParam("jobName") final String jobName) {
+        jobAPIService.getJobOperatorAPI().shutdown(Optional.of(jobName), Optional.<String>absent());
+    }
+
+
+
+
     /**
      * 获取作业总数.
      * 
@@ -55,7 +105,7 @@ public final class JobOperationRestfulApi {
     }
     
     /**
-     * 获取作业详情.
+     * 返回全部的作业，前端分页
      * 
      * @return 作业详情集合
      */
@@ -64,53 +114,9 @@ public final class JobOperationRestfulApi {
     public Collection<JobBriefInfo> getAllJobsBriefInfo() {
         return jobAPIService.getJobStatisticsAPI().getAllJobsBriefInfo();
     }
-    
-    /**
-     * 触发作业.
-     * 
-     * @param jobName 作业名称
-     */
-    @POST
-    @Path("/{jobName}/trigger")
-    public void triggerJob(@PathParam("jobName") final String jobName) {
-        jobAPIService.getJobOperatorAPI().trigger(Optional.of(jobName), Optional.<String>absent());
-    }
-    
-    /**
-     * 禁用作业.
-     * 
-     * @param jobName 作业名称
-     */
-    @POST
-    @Path("/{jobName}/disable")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public void disableJob(@PathParam("jobName") final String jobName) {
-        jobAPIService.getJobOperatorAPI().disable(Optional.of(jobName), Optional.<String>absent());
-    }
-    
-    /**
-     * 启用作业.
-     *
-     * @param jobName 作业名称
-     */
-    @DELETE
-    @Path("/{jobName}/disable")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public void enableJob(@PathParam("jobName") final String jobName) {
-        jobAPIService.getJobOperatorAPI().enable(Optional.of(jobName), Optional.<String>absent());
-    }
-    
-    /**
-     * 终止作业.
-     * 
-     * @param jobName 作业名称
-     */
-    @POST
-    @Path("/{jobName}/shutdown")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public void shutdownJob(@PathParam("jobName") final String jobName) {
-        jobAPIService.getJobOperatorAPI().shutdown(Optional.of(jobName), Optional.<String>absent());
-    }
+
+
+
     
     /**
      * 获取分片信息.

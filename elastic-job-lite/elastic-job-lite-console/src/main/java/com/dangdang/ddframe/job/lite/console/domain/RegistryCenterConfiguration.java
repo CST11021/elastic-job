@@ -29,7 +29,14 @@ import java.io.Serializable;
 
 /**
  * 注册中心配置.
- *
+ * 对应~/.elastic-job-console/Configurations.xml配置文件注册中心配置节点
+ * <globalConfiguration>
+ *     <registryCenterConfigurations>
+ *         <registryCenterConfiguration>
+ *             ...
+ *         </registryCenterConfiguration>
+ *     </registryCenterConfigurations>
+ * </globalConfiguration>
  * @author zhangliang
  */
 @Getter
@@ -40,19 +47,20 @@ import java.io.Serializable;
 public final class RegistryCenterConfiguration implements Serializable {
     
     private static final long serialVersionUID = -5996257770767863699L;
-    
+
+    /** 注册中心配置名 */
     @XmlAttribute(required = true)
     private String name;
-    
+    /** zk地址 */
     @XmlAttribute(required = true)
     private String zkAddressList;
-    
+    /** 命名空间 */
     @XmlAttribute
     private String namespace;
-    
+    /** 连接Zookeeper的权限令牌. 缺省为不需要权限验证. */
     @XmlAttribute
     private String digest;
-    
+    /** 是否已连接 */
     @XmlAttribute
     private boolean activated;
 }

@@ -22,11 +22,13 @@ import com.dangdang.ddframe.job.lite.console.repository.ConfigurationsXmlReposit
 
 /**
  * 基于XML的全局配置数据访问器实现类.
+ * 配置文件： ~/.elastic-job-console/Configurations.xml 配置文件
+ * 配置类：Configurations.xml
  *
  * @author zhangliang
  */
 public final class ConfigurationsXmlRepositoryImpl extends AbstractXmlRepositoryImpl<GlobalConfiguration> implements ConfigurationsXmlRepository {
-    
+
     public ConfigurationsXmlRepositoryImpl() {
         super("Configurations.xml", GlobalConfiguration.class);
     }
