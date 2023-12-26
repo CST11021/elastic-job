@@ -25,6 +25,7 @@ import com.dangdang.ddframe.job.lite.lifecycle.domain.JobBriefInfo;
 import com.dangdang.ddframe.job.lite.lifecycle.domain.JobBriefInfo.JobStatus;
 import com.dangdang.ddframe.job.reg.base.CoordinatorRegistryCenter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,6 +39,7 @@ import java.util.Set;
  *
  * @author caohao
  */
+@Slf4j
 @RequiredArgsConstructor
 public final class JobStatisticsAPIImpl implements JobStatisticsAPI {
     
@@ -54,6 +56,30 @@ public final class JobStatisticsAPIImpl implements JobStatisticsAPI {
         List<JobBriefInfo> result = new ArrayList<>(jobNames.size());
         for (String each : jobNames) {
             JobBriefInfo jobBriefInfo = getJobBriefInfo(each);
+            if (null != jobBriefInfo) {
+                result.add(jobBriefInfo);
+            }
+        }
+        Collections.sort(result);
+        return result;
+    }
+
+    @Override
+    public Collection<JobBriefInfo> queryJobsBriefInfo(String jobNameKeyword) {
+        List<String> jobNames = regCenter.getChildrenKeys("/");
+        List<JobBriefInfo> result = new ArrayList<>(jobNames.size());
+        for (String each : jobNames) {
+            if (!each.contains(jobNameKeyword)) {
+                continue;
+            }
+
+            JobBriefInfo jobBriefInfo = null;
+            try {
+                jobBriefInfo = getJobBriefInfo(each);
+            } catch (Exception e) {
+                log.error("获取任务信息异常,job={}", each, e);
+            }
+
             if (null != jobBriefInfo) {
                 result.add(jobBriefInfo);
             }

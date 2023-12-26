@@ -41,7 +41,9 @@ public interface JobStatisticsAPI {
      * @return 作业简明信息集合.
      */
     Collection<JobBriefInfo> getAllJobsBriefInfo();
-    
+
+    Collection<JobBriefInfo> queryJobsBriefInfo(String jobNameKeyword);
+
     /**
      * 获取作业简明信息.
      *
